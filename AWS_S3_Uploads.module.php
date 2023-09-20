@@ -2,11 +2,6 @@
 class AWS_S3_Uploads extends CMSModule
 {
 	const MANAGE_PERM = 'manage_AWS_S3_Uploads';
-	const S3_UPLOADS_BUCKET = 'hmn-uploads';
-	const S3_UPLOADS_KEY = 'key';
-	const S3_UPLOADS_REGION = 'us-east-1';
-	const S3_UPLOADS_BUCKET_URL = 'https://localhost';
-	const S3_UPLOADS_OBJECT_ACL = 'public';
 	
 	public function GetVersion() { return '1.0'; }
 	public function GetFriendlyName() { return $this->Lang('friendlyname'); }
@@ -31,6 +26,8 @@ class AWS_S3_Uploads extends CMSModule
 	public function GetHelp() { return @file_get_contents(__DIR__.'/doc/help.inc'); }
 	public function GetChangeLog() { return @file_get_contents(__DIR__.'/doc/changelog.inc'); }
 
+	
+
 	public function is_developer_mode() {
 		$config = \cms_config::get_instance();
 		if( isset($config['developer_mode']) && $config['developer_mode'] ) {
@@ -39,6 +36,33 @@ class AWS_S3_Uploads extends CMSModule
 			return false;
 		}
 	}
+
+	public function GetFileIcon($extension,$isdir=false) {
+        if (empty($extension)) $extension = '---'; // hardcode extension to something.
+        if ($extension[0] == ".") $extension = substr($extension,1);
+        $config = \cms_config::get_instance();
+        $iconsize=$this->GetPreference("iconsize","32px");
+        $iconsizeHeight=str_replace("px","",$iconsize);
+
+        $result="";
+        if ($isdir) {
+            $result="<img height=\"".$iconsizeHeight."\" style=\"border:0;\" src=\"".$config["root_url"]."/modules/FileManager/icons/themes/default/extensions/".$iconsize."/dir.png\" ".
+                "alt=\"directory\" ".
+                "align=\"middle\" />";
+            return $result;
+        }
+
+        if (file_exists($config["root_path"]."/modules/FileManager/icons/themes/default/extensions/".$iconsize."/".strtolower($extension).".png")) {
+            $result="<img height='".$iconsizeHeight."' style='border:0;' src='".$config["root_url"]."/modules/FileManager/icons/themes/default/extensions/".$iconsize."/".strtolower($extension).".png' ".
+                "alt='".$extension."-file' ".
+                "align='middle' />";
+        } else {
+            $result="<img height='".$iconsizeHeight."' style='border:0;' src='".$config["root_url"]."/modules/FileManager/icons/themes/default/extensions/".$iconsize."/0.png' ".
+                "alt=".$extension."-file' ".
+                "align='middle' />";
+        }
+        return $result;
+    }
 
 }
 

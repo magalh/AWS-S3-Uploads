@@ -30,10 +30,10 @@ $lang['reviews'] = 'Reviews';
 $lang['region'] = 'Region';
 #S
 $lang['submit'] = 'Submit';
-$lang['S3_UPLOADS_BUCKET'] = 'Bucket Name';
-$lang['S3_UPLOADS_SECRET'] = 'Upload Secret';
-$lang['S3_UPLOADS_BUCKET_URL'] = 'Bucket URL';
-$lang['S3_UPLOADS_KEY'] = 'Upload Key';
+$lang['s3_bucket_name'] = 'Bucket Name';
+$lang['s3_uploads_secret'] = 'Upload Secret';
+$lang['s3_bucket_URL'] = 'Bucket URL';
+$lang['s3_uploads_key'] = 'Upload Key';
 #T
 $lang['type'] = 'Type';
 $lang['type_AWS_S3_Uploads'] = 'AWS S3 Uploads';

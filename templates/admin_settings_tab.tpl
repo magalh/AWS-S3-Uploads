@@ -7,7 +7,6 @@
 	<div class="error">{$aws_error_msg}</div>
 {/if}
 
-{content_module module=ECB2 field=admin_fieldset_start block=test label=''}
 {form_start}
 <div class="pageoverflow">
  <p class="pagetext">{$mod->Lang('s3_bucket_name')}:</p>
@@ -41,7 +40,6 @@
  </p>
 </div>
 {form_end}
-{content_module module=ECB2 field=admin_fieldset_end block=test16 label='&nbsp;'}
 {if $mod->is_developer_mode()}
   {get_template_vars}
 {/if}
