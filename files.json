@@ -1,0 +1,28 @@
+{"files": [
+    {
+      "name": "picture1.jpg",
+      "size": 902604,
+      "url": "http:\/\/example.org\/files\/picture1.jpg",
+      "thumbnailUrl": "http:\/\/example.org\/files\/thumbnail\/picture1.jpg",
+      "deleteUrl": "http:\/\/example.org\/files\/picture1.jpg",
+      "deleteType": "DELETE"
+    },
+    {
+      "name": "picture2.jpg",
+      "size": 841946,
+      "url": "http:\/\/example.org\/files\/picture2.jpg",
+      "thumbnailUrl": "http:\/\/example.org\/files\/thumbnail\/picture2.jpg",
+      "deleteUrl": "http:\/\/example.org\/files\/picture2.jpg",
+      "deleteType": "DELETE"
+    },
+    {
+        "name": "picture33.jpg",
+        "size": 902604,
+        "error": "Filetype not allowed"
+      },
+      {
+        "name": "picture43.jpg",
+        "size": 841946,
+        "error": "Filetype not allowed"
+      }
+  ]}

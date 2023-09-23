@@ -1,4 +1,4 @@
-{if !isset($noform)}
+{if !isset($ajax)}
 <style type="text/css">
 a.filelink:visited {
    color: #000;
@@ -7,6 +7,7 @@ a.filelink:visited {
 <script type="text/javascript">
 var refresh_url = '{$refresh_url}'+'&showtemplate=false';
 refresh_url = refresh_url.replace(/amp;/g,'');
+
 // <![CDATA[
 function enable_button(idlist) {
   $(idlist).removeAttr('disabled').removeClass('ui-state-disabled ui-button-disabled');
@@ -138,18 +139,15 @@ $(document).ready(function () {
 
 <div>
   {$formstart}
-
 <div>
 	<fieldset>
         {filebtn id='btn_newdir' iname="{$actionid}fileactionnewdir" icon='ui-icon-circle-plus' text=$mod_fm->Lang('newdir') title=$mod_fm->Lang('title_newdir')}
         {filebtn id='btn_view' iname="{$actionid}fileactionview" icon='ui-icon-circle-zoomin' text=$mod_fm->Lang('view') title=$mod_fm->Lang('title_view')}
-		{filebtn id='btn_rename' iname="{$actionid}fileactionrename" text=$mod_fm->Lang('rename') title=$mod_fm->Lang('title_rename')}
 		{filebtn id='btn_delete' iname="{$actionid}fileactiondelete" icon='ui-icon-trash' text=$mod_fm->Lang('delete') title=$mod_fm->Lang('title_delete')}
-		{filebtn id='btn_move' iname="{$actionid}fileactionmove" icon='ui-icon-arrow-4-diag' text=$mod_fm->Lang('move') title=$mod_fm->Lang('title_move')}
-		{filebtn id='btn_copy' iname="{$actionid}fileactioncopy" icon='ui-icon-copy' text=$mod_fm->Lang('copy') title=$mod_fm->Lang('title_copy')}
 	</fieldset>
 </div>
 {$hiddenpath}
+{$bucket_id}
 {/if}
 
 <div id="filesarea">
@@ -158,7 +156,7 @@ $(document).ready(function () {
 			<tr>
 				<th class="pageicon">&nbsp;</th>
 				<th>{$filenametext}</th>
-				<th class="pageicon">{$mod_fm->Lang('mimetype')}</th>
+				<th>{$mod_fm->Lang('mimetype')}</th>
 				<th class="pageicon" title="{$mod_fm->Lang('title_col_filesize')}" style="text-align:right;">{$filesizetext}</th>
 				<th class="pageicon"></th>
 				<th class="pageicon" title="{$mod_fm->Lang('title_col_filedate')}">{$filedatetext}</th>
@@ -181,7 +179,7 @@ $(document).ready(function () {
 				<td>
 				{if !isset($file->noCheckbox)}
 					<label for="x_{$file->urlname}" style="display: none;">{$mod_fm->Lang('toggle')}</label>
-					<input type="checkbox" title="{$mod_fm->Lang('toggle')}" id="x_{$file->urlname}" name="{$actionid}selall[]" value="{$file->urlname}" class="fileselect {implode(' ',$file->type)}" {if isset($file->checked)}checked="checked"{/if}/>
+					<input type="checkbox" title="{$mod_fm->Lang('toggle')}" id="x_{$file->name}" name="{$actionid}selall[]" value="{$file->name}" class="fileselect {implode(' ',$file->type)}" {if isset($file->checked)}checked="checked"{/if}/>
 				{/if}
 				</td>
 			</tr>
@@ -196,7 +194,7 @@ $(document).ready(function () {
 	</table>
 </div>
 
-{if !isset($noform)}
+{if !isset($ajax)}
 	{*{$actiondropdown}{$targetdir}{$okinput}*}
 	{$formend}
 </div>

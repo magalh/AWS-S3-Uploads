@@ -8,6 +8,7 @@ class AWS_S3_Uploads extends CMSModule
 	public function GetAdminDescription() { return $this->Lang('admindescription'); }
 	public function IsPluginModule() { return TRUE; }
 	public function HasAdmin() { return TRUE; }
+	public function GetHeaderHTML() { return $this->_output_header_javascript(); }
 	public function VisibleToAdminUser() { return $this->CheckPermission(self::MANAGE_PERM); }
 	public function GetAuthor() { return 'Magal Hezi'; }
 	public function GetAuthorEmail() { return 'h_magal@hotmail.com'; }
@@ -26,7 +27,28 @@ class AWS_S3_Uploads extends CMSModule
 	public function GetHelp() { return @file_get_contents(__DIR__.'/doc/help.inc'); }
 	public function GetChangeLog() { return @file_get_contents(__DIR__.'/doc/changelog.inc'); }
 
-	
+	protected function _output_header_javascript()
+    {
+        $out = '';
+        $urlpath = $this->GetModuleURLPath()."/js";
+        $jsfiles = array('jquery-file-upload/jquery.iframe-transport.js');
+        $jsfiles[] = 'jquery-file-upload/jquery.fileupload.js';
+        $jsfiles[] = 'jqueryrotate/jQueryRotate-2.2.min.js';
+        $jsfiles[] = 'jrac/jquery.jrac.js';
+
+        $fmt = '<script type="text/javascript" src="%s/%s"></script>';
+        foreach( $jsfiles as $one ) {
+            $out .= sprintf($fmt,$urlpath,$one)."\n";
+        }
+
+        $fmt = '<link rel="stylesheet" type="text/css" href="%s/%s"/>';
+        $cssfiles = array('jrac/style.jrac.css');
+        foreach( $cssfiles as $one ) {
+            $out .= sprintf($fmt,$urlpath,$one);
+        }
+
+        return $out;
+    }
 
 	public function is_developer_mode() {
 		$config = \cms_config::get_instance();

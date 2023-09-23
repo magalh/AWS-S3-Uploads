@@ -4,43 +4,7 @@ namespace AWS_S3_Uploads;
 if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
-
-
 $error = 0;
-
-
-
-    //$credentials = new Credentials($this->GetPreference('s3_uploads_secret'), $this->GetPreference('s3_uploads_key'));
-
-/*    $s3Client = new S3Client([
-        'credentials' => $credentials,
-        'region' => $this->GetPreference('s3_region'),
-        'version' => 'latest'
-    ]);*/
-
-    /*$buckets = $s3Client->listBuckets();
-foreach ($buckets['Buckets'] as $bucket) {
-    echo $bucket['Name'] . "\n";
-}
-    
-    try {
-        $contents = $s3Client->listObjectsV2([
-            'Bucket' => $this->GetPreference('s3_bucket_name'),
-        ]);
-    
-        foreach ($contents['Contents'] as $content) {
-            echo $content['Key'] . "<br>";
-        }
-
-    } catch (\Exception $e) {
-        $error = 1;
-        $error_message = $e->getMessage();
-    }
-*/
-
-
-
-
 
 if( isset($params['submit']) ) {
     $this->SetPreference('s3_bucket_name',$params['s3_bucket_name']);
@@ -48,13 +12,15 @@ if( isset($params['submit']) ) {
     $this->SetPreference('s3_uploads_secret',$params['s3_uploads_secret']);
     $this->SetPreference('s3_uploads_key',$params['s3_uploads_key']);
     $this->SetMessage("Saved");
-    $this->RedirectToAdminTab('settings');
+
+    if($ready){
+        $this->RedirectToAdminTab($params['s3_bucket_name']);
+    } else {
+        $this->RedirectToAdminTab('settings');
+    }
 }
 
 $tpl = $smarty->CreateTemplate( $this->GetTemplateResource('admin_settings_tab.tpl'), null, null, $smarty );
-$smarty->assign('all_validations',utils::list_validation_editors() );
-
-
 $awsregionnames = file_get_contents(dirname(__FILE__).'/doc/aws-region-names.json');
 $smarty->assign('s3_region_list',json_decode($awsregionnames,true));
 

@@ -4,9 +4,8 @@
 	<div class="pageerrorcontainer">{$errormsg}</div>
 {/if}
 {if isset($aws_error_msg) && $aws_error_msg != ""}
-	<div class="error">{$aws_error_msg}</div>
+	<div class="warning">{$aws_error_msg}</div>
 {/if}
-
 {form_start}
 <div class="pageoverflow">
  <p class="pagetext">{$mod->Lang('s3_bucket_name')}:</p>

@@ -12,51 +12,161 @@ final class utils
 
     private $s3Client = null;
 
-    public function __construct (){}
-
-    public static function list_validation_editors()
-    {
-        return 'ciao';
+    public function __construct (){
+        $this->s3Client = self::getS3Client();
     }
 
     public function is_aws_ready() {
         $mod = $this->get_mod();
+        $smarty = cmsms()->GetSmarty();
 		$data = array('s3_bucket_name','s3_region','s3_uploads_secret','s3_uploads_key');
 		$error_message="";
-		foreach ($data as $key)
-		{
-			$item = $mod->GetPreference($key);
-			if($item=="" or $item==null)
-			{
-				$error_message.=$mod->Lang($key).",";
-			}
-		}
-		if($error_message!="")
-		{
-			$error_message=substr($error_message, 0,-1);
-			$smarty = cmsms()->GetSmarty();
-			$smarty->assign('errormsg',$error_message.' cannot be null or empty.');
-			return false;
-		}
-		else
-		{
-            $this->s3Client = new S3Client([
-                'credentials' => $this->get_credentials(),
-                'region' => $mod->GetPreference('s3_region'),
-                'version' => 'latest'
-            ]);
-			return true;
-		}
+
+        try {
+            foreach ($data as $key)
+            {
+                $item = $mod->GetPreference($key);
+                if($item=="" or $item==null)
+                {
+                    $error_message.=$mod->Lang($key).",";
+                }
+                if($error_message!="") {
+                    throw new \Exception($error_message);
+
+                }
+            }
+        } catch (\Exception $e) {
+            $smarty->assign('errormsg',$error_message.' cannot be null or empty.');
+            return false;
+        }
+
+        if (!$this->s3Client){
+            return false;
+        }
+
+        if(!$this->s3Client->doesBucketExist($mod->GetPreference('s3_bucket_name'))){
+            $smarty->assign('aws_error_msg',$mod->GetPreference('s3_bucket_name')." does not exist");
+            return false;
+        }
+		
+        return true;
+		
 	}
+
+    private static function getS3Client(){
+
+        $s3Client = new S3Client([
+            'credentials' => self::get_credentials(),
+            'region' => self::get_mod()->GetPreference('s3_region'),
+            'version' => 'latest'
+            ]);
+
+        try {
+            $buckets = $s3Client->listBuckets();
+        } catch (AwsException $e) {
+            $smarty = cmsms()->GetSmarty();
+            $smarty->assign('aws_error_msg',$e->getAwsErrorMessage());
+            return false;
+        }
+
+        return $s3Client;
+    }
+
+    public function upload_file($bucket_id,$file_name,$file_temp_src){
+        try { 
+            $result = $this->s3Client->putObject([ 
+                'Bucket' => $bucket_id, 
+                'Key'    => $file_name,
+                'SourceFile' => $file_temp_src,
+                'Tagging' => "Module=CMSMS::AWS_S3_Uploads"
+            ]); 
+            $result_arr = $result->toArray(); 
+
+        } catch (AwsException $e) { 
+            print_r($e->getAwsErrorMessage());
+            $smarty = cmsms()->GetSmarty();
+            $smarty->assign('aws_error_msg',$e->getAwsErrorMessage());
+            exit();
+        } 
+    }
 
     public function list_my_buckets(){
         $buckets = $this->s3Client->listBuckets();
         return $buckets['Buckets'];
     }
 
+    public function bucketsExists($bucket_id){
+       if($this->s3Client->doesBucketExist($bucket_id)){
+        echo "bucket exists";
+       } else {
+        echo "bucket does not exist";
+       }
+
+    }
+
+    public function removePath($link,$path){
+        $newphrase = str_replace($path, "", $link);
+        return $newphrase;
+     }
+
     public function list_my_files(){
         $buckets = $this->s3Client->listBuckets();
         return $buckets['Buckets'];
+    }
+
+    public static function deleteObject($bucket,$keyname){
+        $s3 = self::getS3Client();
+        try
+            {
+                echo 'Attempting to delete ' . $keyname . '...' . PHP_EOL;
+
+                $result = $s3->deleteObject([
+                    'Bucket' => $bucket,
+                    'Key'    => $keyname
+                ]);
+
+                if ($result['DeleteMarker'])
+                {
+                    echo $keyname . ' was deleted or does not exist.' . PHP_EOL;
+                } else {
+                    exit('Error: ' . $keyname . ' was not deleted.' . PHP_EOL);
+                }
+            }
+            catch (AwsException $e) {
+                exit('Error: ' . $e->getAwsErrorMessage() . PHP_EOL);
+            }
+
+    }
+
+    public static function deleteObjectDir($bucket_id,$dir){
+        $s3 = self::getS3Client();
+
+/*        $dir = rtrim($dir, "/");
+        $dir = ltrim($dir, "/");
+        $dir = $dir . "/";*/
+    
+        $keys = $s3->listObjects([
+            'Bucket' => $bucket_id,
+            'Prefix' => $dir
+        ]);
+
+        // 3. Delete the objects.
+        foreach ($keys['Contents'] as $key)
+        {
+            $s3->deleteObjects([
+                'Bucket'  => $bucket_id,
+                'Delete' => [
+                    'Objects' => [
+                        [
+                            'Key' => $key['Key']
+                        ]
+                    ]
+                ]
+            ]);
+        }
+    
+        return true;
+    
     }
     
     private static function get_mod()
@@ -95,6 +205,7 @@ final class utils
         }
     }
 
+
     public static function get_file_list($bucket_id,$prefix=null)
     {
 
@@ -104,17 +215,26 @@ final class utils
         $result=array();
         $config = \cms_config::get_instance();
 
-        $s3Client = new S3Client([
-            'credentials' => self::get_credentials(),
-            'region' => $mod->GetPreference('s3_region'),
-            'version' => 'latest'
-        ]);
+        $s3Client = self::getS3Client();
 
-        $contents = $s3Client->listObjectsV2([
-            'Bucket' => $bucket_id,
-            'Prefix' => $prefix,
-            'Delimiter' => '/'
-        ]);
+        try {
+            $contents = $s3Client->listObjectsV2([
+                'Bucket' => $bucket_id,
+                'Prefix' => $prefix,
+                'Delimiter' => '/'
+            ]);
+
+        } catch (AwsException $e) {
+            // Handle the error
+            if($e->getStatusCode() == 404){
+                $error_message = $bucket_id." ".$e->getAwsErrorMessage();
+            } else {
+                $error_message = $e->getMessage();
+            }
+
+            $smarty = cmsms()->GetSmarty();
+            $smarty->assign('aws_error_msg',$error_message);
+        }
 
         //print_r($contents);
 
@@ -163,7 +283,8 @@ final class utils
                     $info['size']=self::formatBytes($content['Size']);
                     $info['date']=strtotime( $content['LastModified'] );
                     $info['url']=self::presignedUrl($bucket_id,$content['Key'],$s3Client);
-                    $info['url'] = str_replace('\\','/',$info['url']); // windoze both sucks, and blows.
+                    //$info['url']= $s3Client->getObjectUrl($bucket_id, $content['Key']);;
+                    //$info['url'] = str_replace('\\','/',$info['url']); // windoze both sucks, and blows.
                     $explodedfile=explode('.', $content['Key']); $info['ext']=array_pop($explodedfile);
                 }
             
@@ -181,6 +302,16 @@ final class utils
 
         return $result;
     }
+
+    public static function is_file_acceptable( $file_type )
+  {
+      $allowTypes = array('pdf','doc','docx','xls','xlsx','jpg','png','jpeg','gif'); 
+      if(!in_array($file_type, $allowTypes)) return FALSE;
+        
+      return TRUE;
+  }
+
+  
 
 
 }

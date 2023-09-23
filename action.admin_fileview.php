@@ -7,8 +7,16 @@ $mod_fm = \cms_utils::get_module('FileManager');
 $path='';
 //print_r($this->s3Client);
 
+use AWS_S3_Uploads\utils;
+$utils = new utils();
+
 if( isset($params["newdir"])) {
   $path = $params["newdir"];
+}
+if( isset($params["ajax"])) {
+  $bucket_id = $params["bucket_id"];
+  $path = $params["path"];
+  $smarty->assign('ajax', true);
 }
 
 $filelist=utils::get_file_list($bucket_id,$path);
@@ -16,6 +24,7 @@ $filelist=utils::get_file_list($bucket_id,$path);
 $config = $gCms->GetConfig();
 $smarty->assign('path', $path);
 $smarty->assign('hiddenpath', $this->CreateInputHidden($id, "path", $path));
+$smarty->assign('bucket_id', $this->CreateInputHidden($id, "bucket_id", $bucket_id));
 $smarty->assign('formstart', $this->CreateFormStart($id, 'fileaction', $returnid));
 
 $themeObject = \cms_utils::get_theme_object();
@@ -52,7 +61,7 @@ for ($i = 0; $i < count($filelist); $i++) {
     $onerow->url = $filelist[$i]['url'];
   }
   $onerow->name = $filelist[$i]['name'];
-  $onerow->urlname = $this->encodefilename($filelist[$i]['name']);
+  $onerow->urlname = $mod_fm->encodefilename($filelist[$i]['name']);
   $onerow->type = array('file');
   $onerow->mime = $filelist[$i]['mime'];
   if( isset($params[$onerow->urlname]) ) {
@@ -64,25 +73,15 @@ for ($i = 0; $i < count($filelist); $i++) {
   }
 
   if ($filelist[$i]["dir"]) {
-    $urlname="dir_" . $this->encodefilename($filelist[$i]["name"]);
+    $urlname="dir_" . $mod_fm->encodefilename($filelist[$i]["name"]);
     $value="";
     if (isset($params[$urlname])) $value="true";
-    $onerow->checkbox = $this->CreateInputCheckBox($id, $urlname , "true", $value);
+    $onerow->checkbox = $mod_fm->CreateInputCheckBox($id, $urlname , "true", $value);
   } else {
-    $urlname="file_" . $this->encodefilename($filelist[$i]["name"]);
+    $urlname="file_" . $mod_fm->encodefilename($filelist[$i]["name"]);
     $value="";
     if (isset($params[$urlname])) $value="true";
     $onerow->checkbox = $this->CreateInputCheckBox($id, $urlname, "true", $value);
-  }
-
-  $onerow->thumbnail = '';
-  $onerow->editor = '';
-  if ($filelist[$i]["image"]) {
-      $onerow->type[] = 'image';
-      $params['imagesrc'] = $path.'/'.$filelist[$i]['name'];
-      if($this->GetPreference("showthumbnails", 0) == 1) {
-          $onerow->thumbnail = $this->GetThumbnailLink($filelist[$i], $path);
-      }
   }
 
   if ($filelist[$i]["dir"]) {
@@ -92,16 +91,30 @@ for ($i = 0; $i < count($filelist); $i++) {
       $onerow->iconlink = "<a href='" . $filelist[$i]["url"] . "' target='_blank'>" . $this->GetFileIcon($filelist[$i]["ext"]) . "</a>";
   }
 
+  $tmp_path_parts = explode('/',$path);
   $link = $filelist[$i]["name"];
+  $filename = pathinfo($link);
+  
   if ($filelist[$i]["dir"]) {
       $parms = [ 'newdir'=>$filelist[$i]['name'],'__activetab'=>$bucket_id];
       $url = $this->create_url($id,'defaultadmin','',$parms);
       if( $filelist[$i]['name'] != '..' ) {
+
+          $link = $filename['basename'];
           $countdirs++;
           $onerow->type = array('dir');
           $onerow->txtlink = "<a class=\"dirlink\" href=\"{$url}\" title=\"{$mod_fm->Lang('title_changedir')}\">{$link}</a>";
       } else {
-          // for the parent directory
+
+        $pathinfo = pathinfo($path);
+
+          if($pathinfo['dirname'] == '.') {
+            $parms = ['__activetab'=>$bucket_id];
+          } else {
+            $parms = [ 'newdir'=>$pathinfo['dirname'].'/','__activetab'=>$bucket_id];
+          }
+
+          $url = $this->create_url($id,'defaultadmin','',$parms);
           $onerow->noCheckbox = 1;
           $icon = $mod_fm->GetModuleURLPath().'/icons/themes/default/actions/dir_up.gif';
           $img_tag = '<img src="'.$icon.'" width="32" title="'.$mod_fm->Lang('title_changeupdir').'"/>';
@@ -111,10 +124,10 @@ for ($i = 0; $i < count($filelist); $i++) {
   } else {
       $countfiles++;
       $countfilesize+=$filelist[$i]["size"];
-      //$url = $this->create_url($id,'view','',array('file'=>$this->encodefilename($filelist[$i]['name'])));
+      //$url = $this->create_url($id,'view','',array('file'=>$mod_fm->encodefilename($filelist[$i]['name'])));
       $url = $onerow->url;
       //$onerow->txtlink = "<a href='" . $filelist[$i]["url"] . "' target='_blank' title=\"".$mod_fm->Lang('title_view_newwindow')."\">" . $link . "</a>";
-      $onerow->txtlink = "<a class=\"filelink\" href='" . $url . "' target='_blank' title=\"".$mod_fm->Lang('title_view_newwindow')."\">" . $link . "</a>";
+      $onerow->txtlink = "<a class=\"filelink\" href='" . $url . "' target='_blank' title=\"".$mod_fm->Lang('title_view_newwindow')."\">" . $filename['basename'] . "</a>";
   }
   if( $filelist[$i]['archive']  ) $onerow->type[] = 'archive';
 
@@ -123,7 +136,6 @@ for ($i = 0; $i < count($filelist); $i++) {
   } else {
     $filesize = '';
     $onerow->filesize = $filelist[$i]["size"];
-    $onerow->filesizeunit = '';
   }
 
   if (!$filelist[$i]["dir"]) {
@@ -147,12 +159,9 @@ $smarty->assign('countstext', $counts);
 $smarty->assign('formend', $this->CreateFormEnd());
 
 if( isset($params['noform']) ) $smarty->assign('noform',1);
-$smarty->assign('refresh_url',$this->Create_url($id,'admin_fileview','',array('noform'=>1)));
-$smarty->assign('viewfile_url',$this->create_url($id,'admin_fileview','',array('ajax'=>1)));
+$smarty->assign('refresh_url',$this->Create_url($id,'admin_fileview','',array('ajax'=>1,'bucket_id'=>$bucket_id,'path'=>$path)));
 $smarty->assign('mod_fm',$mod_fm);
-$smarty->assign('confirm_unpack',$mod_fm->Lang('confirm_unpack'));
 
-$tmp_path_parts = explode('/',$path);
 $path_parts = [];
 for( $i = 0; $i < count($tmp_path_parts); $i++ ) {
     $obj = new \StdClass;
@@ -165,7 +174,7 @@ for( $i = 0; $i < count($tmp_path_parts); $i++ ) {
         // not the last entry
         $fullpath = implode('/',array_slice($tmp_path_parts,0,$i+1));
         if( startswith($fullpath,'::top::') ) $fullpath = substr($fullpath,7);
-        $obj->url = $this->create_url( $id, 'defaultadmin', '',[ 'newdir' => $fullpath,'__activetab'=>$bucket_id] );
+        $obj->url = $this->create_url( $id, 'defaultadmin', '',[ 'newdir' => $fullpath.'/','__activetab'=>$bucket_id] );
     } else {
         // the last entry... no link
     }
