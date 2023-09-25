@@ -13,11 +13,17 @@ final class utils
     private $s3Client = null;
 
     public function __construct (){
+        $this->mod = self::get_mod();
         $this->s3Client = self::getS3Client();
+        $this->s3_bucket_name = $this->mod->GetPreference('s3_bucket_name');
+        $this->s3_region = $this->mod->GetPreference('s3_region');
+        $this->s3_uploads_secret = $this->mod->GetPreference('s3_uploads_secret');
+        $this->s3_uploads_key = $this->mod->GetPreference('s3_uploads_key');
+        $this->s3_bucket_url = $this->mod->GetPreference('s3_bucket_url');
     }
 
     public function is_aws_ready() {
-        $mod = $this->get_mod();
+        $mod = $this->mod;
         $smarty = cmsms()->GetSmarty();
 		$data = array('s3_bucket_name','s3_region','s3_uploads_secret','s3_uploads_key');
 		$error_message="";
@@ -48,6 +54,9 @@ final class utils
             $smarty->assign('aws_error_msg',$mod->GetPreference('s3_bucket_name')." does not exist");
             return false;
         }
+
+        $this->check_iam_policy();
+
 		
         return true;
 		
@@ -78,14 +87,17 @@ final class utils
                 'Bucket' => $bucket_id, 
                 'Key'    => $file_name,
                 'SourceFile' => $file_temp_src,
-                'Tagging' => "Module=CMSMS::AWS_S3_Uploads"
+                'Tagging' => "Module=CMSMS::AWS_S3_Uploads",
+                'ACL'    => 'public-read'
             ]); 
             $result_arr = $result->toArray(); 
 
+            print_r($result);
+
         } catch (AwsException $e) { 
-            print_r($e->getAwsErrorMessage());
             $smarty = cmsms()->GetSmarty();
             $smarty->assign('aws_error_msg',$e->getAwsErrorMessage());
+            echo $e->getCode() . " " .$e->getMessage();
             exit();
         } 
     }
@@ -305,11 +317,98 @@ final class utils
 
     public static function is_file_acceptable( $file_type )
   {
+      $file_type = strtolower($file_type);
       $allowTypes = array('pdf','doc','docx','xls','xlsx','jpg','png','jpeg','gif'); 
       if(!in_array($file_type, $allowTypes)) return FALSE;
         
       return TRUE;
   }
+
+  public function check_iam_policy() {
+        $smarty = cmsms()->GetSmarty();
+        try {
+            $resp = $this->s3Client->getBucketPolicy([
+                'Bucket' => $this->s3_bucket_name
+            ]);
+            $smarty->assign('aws_error_msg',"Succeed in receiving bucket policy:");
+
+        } catch (AwsException $e) {
+            // Display error message
+            if($e->getStatusCode() == 404){
+                //$this->put_iam_policy();
+                $smarty->assign('aws_error_msg',$this->s3_bucket_name." ".$e->getAwsErrorMessage());
+            }
+            
+        }
+
+    }
+
+    private function put_iam_policy() {
+
+        $policy = $this->get_iam_policy();
+        $smarty = cmsms()->GetSmarty();
+
+        try {
+            $resp = $this->s3Client->putBucketPolicy([
+                'Bucket' => $this->s3_bucket_name,
+                'Policy' => $policy,
+            ]);
+            echo "Succeed in put a policy on bucket: " . $this->s3_bucket_name . "\n<br>";
+        } catch (AwsException $e) {
+            // Display error message
+            $smarty->assign('aws_error_msg',$this->s3_bucket_name." ".$e->getAwsErrorMessage());
+
+        }
+
+    }
+
+    private function get_iam_policy() : string {
+
+        $bucket_id = $this->s3_bucket_name;
+		$bucket = strtok( $bucket_id, '/' );
+
+		$path = null;
+
+		if ( strpos( $bucket_id, '/' ) ) {
+			$path = str_replace( strtok( $bucket_id, '/' ) . '/', '', $bucket_id );
+		}
+
+		return '{
+            "Version": "2012-10-17",
+            "Statement": [
+                {
+                    "Sid": "BasicAccess",
+                    "Principal": "*",
+                    "Effect": "Allow",
+                    "Action": [
+                        "s3:AbortMultipartUpload",
+                        "s3:DeleteObject",
+                        "s3:GetObject",
+                        "s3:GetObjectAcl",
+                        "s3:PutObject",
+                        "s3:PutObjectAcl"
+                    ],
+                    "Resource": [
+                        "arn:aws:s3:::'.$bucket_id.'/*"
+                    ]
+                },
+                {
+                    "Sid": "AllowRootAndHomeListingOfBucket",
+                    "Principal": "*",
+                    "Effect": "Allow",
+                    "Action": [
+                        "s3:GetBucketAcl",
+                        "s3:GetBucketLocation",
+                        "s3:GetBucketPolicy",
+                        "s3:ListBucket"
+                    ],
+                    "Resource": ["arn:aws:s3:::' . $bucket_id . '"]
+                }
+            ]
+        }';
+
+        
+	}
 
   
 

@@ -39,8 +39,8 @@ echo $this->StartTabContent();
 	if($ready){
 
 		echo $this->StartTab($bucket_id);
-		include(dirname(__FILE__)."/uploadview.php");
-		include(dirname(__FILE__)."/action.admin_fileview.php");
+		//include(dirname(__FILE__)."/uploadview.php");
+		//include(dirname(__FILE__)."/action.admin_fileview.php");
 		echo $this->EndTab();
 
 /*		//dynamic buckets

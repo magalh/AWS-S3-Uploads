@@ -10,8 +10,6 @@ $utils = new utils();
 $mod_fm = \cms_utils::get_module('FileManager');
 $error = 0;
 
-//$return_params = [ 'newdir'=>$params['path'],'__activetab'=>$params['bucket_id']];
-
 $data = array();
 
 /*$json = file_get_contents(dirname(__FILE__).'/files.json');
@@ -45,7 +43,7 @@ try {
             //upload to S3
             $file_temp_src = $_FILES[$id.'files']["tmp_name"][$i];
             if(is_uploaded_file($file_temp_src)){
-                //$s3 = $utils->upload_file($params["bucket_id"],$params["path"].$file_name,$file_temp_src);
+                $s3 = $utils->upload_file($params["bucket_id"],$params["path"].$file_name,$file_temp_src);
             }
         }
 

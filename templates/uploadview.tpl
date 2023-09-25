@@ -1,6 +1,6 @@
 <script>{literal}
 $(function () {
-    $('#fileupload').fileupload({
+    $('#fileupload2').fileupload({
         dataType: 'json',
         start: function(e,data) {
           $('#progressarea').show();
@@ -22,8 +22,6 @@ $(function () {
           }
         },
         done: function (e, data) {
-          console.log(data.result);
-          
             var filesloop=[];
             if(data.result.files != undefined){
               $.each(data.result.files, function (index, file) {
@@ -50,7 +48,7 @@ $(function () {
 
         },
         stop: function(e, data) {
-          //$('#filesarea').load(refresh_url);
+          $('#filesarea').load(refresh_url);
           $('#progressarea').fadeOut();
         }
     });

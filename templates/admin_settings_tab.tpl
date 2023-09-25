@@ -22,6 +22,12 @@
   </div>
 </div>
 <div class="pageoverflow">
+ <p class="pagetext">{$mod->Lang('s3_bucket_URL')}:</p>
+ <p class="pageinput">
+    <input type="text" name="{$actionid}s3_bucket_url" value="{$s3_bucket_url}" size="50" maxlength="50"/>
+ </p>
+</div>
+<div class="pageoverflow">
  <p class="pagetext">{$mod->Lang('s3_uploads_secret')}:</p>
  <p class="pageinput">
     <input type="text" name="{$actionid}s3_uploads_secret" value="{$s3_uploads_secret}" size="100" maxlength="255"/>
