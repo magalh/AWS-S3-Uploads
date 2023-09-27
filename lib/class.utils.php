@@ -15,17 +15,26 @@ final class utils
     public function __construct (){
         $this->mod = self::get_mod();
         $this->s3Client = null;
-        $this->s3_bucket_name = $this->mod->GetPreference('s3_bucket_name');
-        $this->s3_region = $this->mod->GetPreference('s3_region');
-        $this->s3_uploads_secret = $this->mod->GetPreference('s3_uploads_secret');
-        $this->s3_uploads_key = $this->mod->GetPreference('s3_uploads_key');
-        $this->s3_bucket_url = $this->mod->GetPreference('s3_bucket_url');
+        $this->bucket_name = $this->mod->GetPreference('bucket_name');
+        $this->access_region = $this->mod->GetPreference('access_region');
+        $this->access_secret_key = $this->mod->GetPreference('access_secret_key');
+        $this->access_key = $this->mod->GetPreference('access_key');
+        $this->use_custom_url = $this->mod->GetPreference('use_custom_url');
+        $this->custom_url = $this->mod->GetPreference('custom_url');
+        $this->s3_allowed = $this->mod->GetPreference('s3_allowed');
     }
 
     public function is_aws_ready() {
+
+        $settings = $this->mod->GetSettingsValues();
+
         $mod = $this->mod;
         $smarty = cmsms()->GetSmarty();
-		$data = array('s3_bucket_name','s3_region','s3_uploads_secret','s3_uploads_key');
+
+        if(!is_array($settings)) return false;
+
+        $error = null;
+		$data = array('access_key','access_secret_key','bucket_name','access_region');
 		$error_message="";
 
         try {
@@ -42,7 +51,9 @@ final class utils
                 }
             }
         } catch (\Exception $e) {
-            //$smarty->assign('errormsg',$error_message.' cannot be null or empty.');
+            $message = $error_message.' cannot be null or empty.';
+            $smarty->assign('error',1);
+            $smarty->assign('message',$message);
             return false;
         }
 
@@ -51,12 +62,13 @@ final class utils
             return false;
         }
 
-        if(!$this->s3Client->doesBucketExist($mod->GetPreference('s3_bucket_name'))){
-            $smarty->assign('aws_error_msg',$mod->GetPreference('s3_bucket_name')." does not exist");
+        if(!$this->s3Client->doesBucketExist($mod->GetPreference('bucket_name'))){
+            $smarty->assign('error',1);
+            $smarty->assign('message',$mod->GetPreference('bucket_name')." does not exist");
             return false;
         }
 
-        $this->check_iam_policy();
+        //$this->check_iam_policy();
 
 		
         return true;
@@ -67,7 +79,7 @@ final class utils
 
         $s3Client = new S3Client([
             'credentials' => self::get_credentials(),
-            'region' => self::get_mod()->GetPreference('s3_region'),
+            'region' => self::get_mod()->GetPreference('access_region'),
             'version' => 'latest'
             ]);
 
@@ -75,7 +87,9 @@ final class utils
             $buckets = $s3Client->listBuckets();
         } catch (AwsException $e) {
             $smarty = cmsms()->GetSmarty();
-            $smarty->assign('aws_error_msg',$e->getAwsErrorMessage());
+            $message = $e->getAwsErrorMessage();
+            $smarty->assign('error',1);
+            $smarty->assign('message',$message);
             return false;
         }
 
@@ -97,7 +111,8 @@ final class utils
 
         } catch (AwsException $e) { 
             $smarty = cmsms()->GetSmarty();
-            $smarty->assign('aws_error_msg',$e->getAwsErrorMessage());
+            $smarty->assign('error',1);
+            $smarty->assign('message',$e->getAwsErrorMessage());
             echo $e->getCode() . " " .$e->getMessage();
             exit();
         } 
@@ -192,7 +207,7 @@ final class utils
     private static function get_credentials()
     {
         $mod = self::get_mod();
-        $credentials = new Credentials($mod->GetPreference('s3_uploads_secret'), $mod->GetPreference('s3_uploads_key'));
+        $credentials = new Credentials($mod->GetPreference('access_key'),$mod->GetPreference('access_secret_key'));
         return $credentials;
     }
 
@@ -246,7 +261,8 @@ final class utils
             }
 
             $smarty = cmsms()->GetSmarty();
-            $smarty->assign('aws_error_msg',$error_message);
+            $smarty->assign('error',1);
+            $smarty->assign('message',$error_message);
         }
 
         //print_r($contents);
@@ -327,20 +343,24 @@ final class utils
 
   public function check_iam_policy() {
         $smarty = cmsms()->GetSmarty();
+        $error = null;
         try {
             $resp = $this->s3Client->getBucketPolicy([
-                'Bucket' => $this->s3_bucket_name
+                'Bucket' => $this->bucket_name
             ]);
-            $smarty->assign('aws_error_msg',"Succeed in receiving bucket policy:");
+            $message = "Succeed in receiving bucket policy:";
 
         } catch (AwsException $e) {
-            // Display error message
             if($e->getStatusCode() == 404){
+                $error = 1;
+                $message = $this->bucket_name." ".$e->getAwsErrorMessage();
                 //$this->put_iam_policy();
-                $smarty->assign('aws_error_msg',$this->s3_bucket_name." ".$e->getAwsErrorMessage());
             }
-            
         }
+
+        $smarty->assign('message',$message);
+        $smarty->assign('error',$error);
+        
 
     }
 
@@ -351,21 +371,21 @@ final class utils
 
         try {
             $resp = $this->s3Client->putBucketPolicy([
-                'Bucket' => $this->s3_bucket_name,
+                'Bucket' => $this->bucket_name,
                 'Policy' => $policy,
             ]);
-            echo "Succeed in put a policy on bucket: " . $this->s3_bucket_name . "\n<br>";
+            echo "Succeed in put a policy on bucket: " . $this->bucket_name . "\n<br>";
         } catch (AwsException $e) {
             // Display error message
-            $smarty->assign('aws_error_msg',$this->s3_bucket_name." ".$e->getAwsErrorMessage());
+            $smarty->assign('message',$this->bucket_name." ".$e->getAwsErrorMessage());
 
         }
 
     }
 
-    private function get_iam_policy() : string {
-
-        $bucket_id = $this->s3_bucket_name;
+    public static function get_iam_policy() : string {
+        $mod = self::get_mod();
+        $bucket_id = $mod->GetOptionValue("bucket_name");
 		$bucket = strtok( $bucket_id, '/' );
 
 		$path = null;

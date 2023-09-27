@@ -11,19 +11,20 @@ if (isset($params["fmmessage"]) && $params["fmmessage"]!="") {
 
     $count="";
     if (isset($params["fmmessagecount"]) && $params["fmmessagecount"]!="") $count=$params["fmmessagecount"];
-    echo $this->ShowMessage($params["fmmessage"]);
+    //echo $this->ShowMessage($params["fmmessage"]);
+	//echo $this->ShowErrors($params["fmmessage"]);
 }
 
 if($utils->is_aws_ready()){
 	$ready = 1;
-	$bucket_id = $this->GetPreference('s3_bucket_name');
+	$bucket_id = $this->GetPreference('bucket_name');
 }
 
 echo $this->StartTabHeaders();
 	
 	if($ready){
 		echo $this->SetTabHeader($bucket_id,$bucket_id);
-		
+		echo $this->SetTabHeader('permissions',"Permissions");
 /*		//dynamic buckets
 		foreach ($buckets as $bucket) {
 			echo $this->SetTabHeader(strtolower($bucket['Name']),strtoupper($bucket['Name']));
@@ -39,8 +40,8 @@ echo $this->StartTabContent();
 	if($ready){
 
 		echo $this->StartTab($bucket_id);
-		//include(dirname(__FILE__)."/uploadview.php");
-		//include(dirname(__FILE__)."/action.admin_fileview.php");
+		include(dirname(__FILE__)."/uploadview.php");
+		include(dirname(__FILE__)."/action.admin_fileview.php");
 		echo $this->EndTab();
 
 /*		//dynamic buckets
@@ -50,11 +51,16 @@ echo $this->StartTabContent();
 			include(dirname(__FILE__)."/action.admin_fileview.php");
 			echo $this->EndTab();
         }*/
+
+		echo $this->StartTab('permissions');
+		include(__DIR__.'/function.admin_permissions_tab.php');
+		echo $this->EndTab();
 	}
 
 	echo $this->StartTab('settings');
 		include(__DIR__.'/function.admin_settings_tab.php');
 	echo $this->EndTab();
+	
 
 echo $this->EndTabContent();
 

@@ -1,0 +1,16 @@
+.ui-dialog ul {
+    margin-top: 20px;
+}
+
+.ui-widget-content a {
+     color: #147fdb!important;
+     text-decoration: underline!important;
+}
+
+.alert.success, .alert.error {
+    display: inline-block;
+    width: auto;
+    font-size: 14px;
+    padding: 10px 10px 10px 40px;
+    margin: 10px 0;
+}

@@ -3,23 +3,46 @@
 $lang['admindescription'] = 'Store uploads in AWS S3';
 $lang['ask_uninstall'] = 'Are you sure you want to uninstall the AWS S3 Uploads module?';
 $lang['admin_save'] = "Save";
-
+$lang['access_key'] = 'Access keys';
+$lang['allowed'] = 'Allowed';
 #B
-
+$lang['bucket_name'] = 'Bucket Name';
 #C
 $lang['cancel'] = 'Cancel';
-$lang['config'] = 'Amazon S3 Module Configuration';
+$lang['config'] = 'AWS S3 Module Configuration';
 #D
 $lang['date'] = 'Date';
 $lang['delete'] = 'Delete';
 #E
 $lang['error'] = 'Error';
 #F
-$lang['friendlyname'] = 'Amazon S3 Plugin';
+$lang['friendlyname'] = 'AWS S3 Module';
 $lang['file'] = 'File';
+$lang['fielddef_allow_help'] = 'Specify a comma separated list of file extensions that are allowed. For example: pdf,gif,jpeg,jpg (keep lowercase)';
 #G
 $lang['getstarted'] = 'Get Started with AWS S3 Module';
 #H
+$lang['help_access_key'] = <<<EOT
+<h3>Managing access keys (console)</h3>
+<p>You can use the AWS Management Console to manage the access keys of an IAM user.<br></p>
+<ul>
+<li><a href="https://console.aws.amazon.com/iam" rel="noopener noreferrer" target="_blank"><span>IAM console</span></a></span>
+<li>Use your AWS account ID or account alias, your IAM user name, and your password to sign in to the IAM console.</li>
+<li>In the navigation bar on the upper right, choose your user name, and then choose Security credentials.</li>
+</ul>
+
+<h3>To create an access key</h3>
+<ul>
+<li>In the Access keys section, choose Create access key. If you already have two access keys, this button is deactivated and you must delete an access key before you can create a new one.</li>
+<li>On the Access key best practices & alternatives page, choose your use case to learn about additional options which can help you avoid creating a long-term access key. If you determine that your use case still requires an access key, choose Other and then choose Next.</li>
+<li>(Optional) Set a description tag value for the access key. This adds a tag key-value pair to your IAM user. This can help you identify and update access keys later. The tag key is set to the access key id. The tag value is set to the access key description that you specify. When you are finished, choose Create access key.</li>
+<li>On the Retrieve access keys page, choose either Show to reveal the value of your user's secret access key, or Download .csv file. This is your only opportunity to save your secret access key. After you've saved your secret access key in a secure location, choose Done.</li>
+</ul>
+EOT;
+
+$lang['help_bucket_name'] = 'This module will not create any S3 buckets. You have to create the bucket with public read access.';
+$lang['help_use_custom_url'] = 'Enable this if you want to use custom URL';
+$lang['help_custom_url'] = 'Custom URL can be a Cloudfront URL or if any url mapped on your bucket.';
 #L
 $lang['logfilepath'] = 'Please provide your full Log File path, including filename';
 $lang['line'] = 'Line';
@@ -27,21 +50,25 @@ $lang['line'] = 'Line';
 $lang['message'] = 'Message';
 #P
 $lang['prompt_email'] = 'Email Address';
-$lang['postinstall'] = 'Amazon S3 Module was installed';
+$lang['postinstall'] = 'AWS S3 Module was installed';
 $lang['postrotate'] = 'Action for after image rotation';
 $lang['predefined'] = 'Predefined Angles';
 $lang['prompt_copy'] = 'Copy one or more Items';
 $lang['prompt_dropfiles'] = 'Drop files here to upload';
 $lang['prompt_move'] = 'Move Items to Another Directory';
+$lang['prompt_use_custom_url'] = 'Use Custom URL';
+$lang['prompt_custom_url'] = 'Custom URL';
+
 #R
 $lang['reviews'] = 'Reviews';
 $lang['region'] = 'Region';
 #S
 $lang['submit'] = 'Submit';
-$lang['s3_bucket_name'] = 'Bucket Name';
-$lang['s3_uploads_secret'] = 'Upload Secret';
-$lang['s3_bucket_URL'] = 'Bucket URL';
-$lang['s3_uploads_key'] = 'Upload Key';
+$lang['access_key'] = 'AWS Access Key ID';
+$lang['access_secret_key'] = 'AWS Secret Access Key';
+$lang['bucket_name'] = 'AWS Bucket Name';
+$lang['custom_url'] = 'Custom URL';
+
 #T
 $lang['type'] = 'Type';
 $lang['type_AWSS3'] = 'AWS S3 Module';

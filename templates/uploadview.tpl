@@ -114,8 +114,7 @@ $(function () {
           <p class="pagetext"></p>
           <p class="pageinput">
             <input id="cancel" type="submit" value="{$mod->Lang('cancel')}" style="display: none;"/>
-            <input name="submit" type="submit" value="{$mod->Lang('submit')}"/>
-
+            {*<input name="submit" type="submit" value="{$mod->Lang('submit')}"/>*}
           </p>
         </div>
       </div>

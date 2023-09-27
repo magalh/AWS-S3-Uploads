@@ -41,8 +41,10 @@ class AWSS3 extends CMSModule
             $out .= sprintf($fmt,$urlpath,$one)."\n";
         }
 
+        $urlpath = $this->GetModuleURLPath();
         $fmt = '<link rel="stylesheet" type="text/css" href="%s/%s"/>';
-        $cssfiles = array('jrac/style.jrac.css');
+        $cssfiles = array('js/jrac/style.jrac.css');
+        $cssfiles[] = 'css/style.css';
         foreach( $cssfiles as $one ) {
             $out .= sprintf($fmt,$urlpath,$one);
         }
@@ -84,6 +86,33 @@ class AWSS3 extends CMSModule
                 "align='middle' />";
         }
         return $result;
+    }
+
+    final public function GetSettingsValues()
+    {
+        $prefix = $this->GetName().'_mapi_pref_';
+        $list = cms_siteprefs::list_by_prefix($prefix);
+        if( !$list || !count($list) ) return [];
+        $out = [];
+        foreach( $list as $prefname ) {
+            $tmp = cms_siteprefs::get($prefname);
+            if( !$tmp ) continue;
+            $out[substr($prefname, strlen($prefix))] = $tmp;
+        }
+
+        if( count($out) ) return $out;
+
+    }
+    
+    final public function GetOptionValue($key, $default = '')
+    {
+        $value = $this->GetPreference($key);
+        return isset($value) ? $value : $default;
+    }
+    
+    final public function SetOptionValue($key, $value) : void
+    {
+      $this->SetPreference($key,$value);
     }
 
 }
