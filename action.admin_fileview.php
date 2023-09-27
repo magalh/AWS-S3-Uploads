@@ -1,5 +1,5 @@
 <?php
-namespace AWS_S3_Uploads;
+namespace AWSS3;
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
 $this->SetCurrentTab($bucket_id);
@@ -7,7 +7,7 @@ $mod_fm = \cms_utils::get_module('FileManager');
 $path='';
 //print_r($this->s3Client);
 
-use AWS_S3_Uploads\utils;
+use AWSS3\utils;
 $utils = new utils();
 
 if( isset($params["newdir"])) {

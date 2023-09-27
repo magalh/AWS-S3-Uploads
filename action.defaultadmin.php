@@ -1,14 +1,14 @@
 <?php
 if( !defined('CMS_VERSION') ) exit;
-if( !$this->CheckPermission(AWS_S3_Uploads::MANAGE_PERM) ) return;
+if( !$this->CheckPermission(AWSS3::MANAGE_PERM) ) return;
 
-use AWS_S3_Uploads\utils;
-
+use AWSS3\utils;
 $utils = new utils();
+
 $ready = 0;
 $mod_fm = \cms_utils::get_module('FileManager');
 if (isset($params["fmmessage"]) && $params["fmmessage"]!="") {
-    // gotta get rid of this stuff.
+
     $count="";
     if (isset($params["fmmessagecount"]) && $params["fmmessagecount"]!="") $count=$params["fmmessagecount"];
     echo $this->ShowMessage($params["fmmessage"]);

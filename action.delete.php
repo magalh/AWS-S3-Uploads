@@ -1,5 +1,5 @@
 <?php
-namespace AWS_S3_Uploads;
+namespace AWSS3;
 if (!function_exists("cmsms")) exit;
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
@@ -27,14 +27,14 @@ if( isset($params['submit']) ) {
     if ( strcmp($lastchar, "/") === 0 ) {
       utils::deleteObjectDir($params['bucket_id'],$file);
       audit('',"S3", "Removed directory: ".$file);
-      \CMSMS\HookManager::do_hook('AWS_S3_Uploads::OnDirectoryDeleted', $parms );
+      \CMSMS\HookManager::do_hook('AWSS3::OnDirectoryDeleted', $parms );
       continue;
     }
     
     utils::deleteObject($params['bucket_id'],$file);
     $parms = array('file'=>$file);
     audit('',"S3", "Removed file: ".$file);
-    \CMSMS\HookManager::do_hook('AWS_S3_Uploads::OnFileDeleted', $parms );
+    \CMSMS\HookManager::do_hook('AWSS3::OnFileDeleted', $parms );
 
   } // foreach
 

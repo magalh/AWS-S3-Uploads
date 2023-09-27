@@ -1,5 +1,5 @@
 <?php
-namespace AWS_S3_Uploads;
+namespace AWSS3;
 
 if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;

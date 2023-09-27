@@ -8,16 +8,17 @@ $lang['admin_save'] = "Save";
 
 #C
 $lang['cancel'] = 'Cancel';
+$lang['config'] = 'Amazon S3 Module Configuration';
 #D
 $lang['date'] = 'Date';
 $lang['delete'] = 'Delete';
 #E
 $lang['error'] = 'Error';
 #F
-$lang['friendlyname'] = 'AWS S3 Uploads';
+$lang['friendlyname'] = 'Amazon S3 Plugin';
 $lang['file'] = 'File';
 #G
-$lang['getstarted'] = 'Get Started with AWS S3 Uploads';
+$lang['getstarted'] = 'Get Started with AWS S3 Module';
 #H
 #L
 $lang['logfilepath'] = 'Please provide your full Log File path, including filename';
@@ -26,7 +27,7 @@ $lang['line'] = 'Line';
 $lang['message'] = 'Message';
 #P
 $lang['prompt_email'] = 'Email Address';
-$lang['postinstall'] = 'FileManager module was installed';
+$lang['postinstall'] = 'Amazon S3 Module was installed';
 $lang['postrotate'] = 'Action for after image rotation';
 $lang['predefined'] = 'Predefined Angles';
 $lang['prompt_copy'] = 'Copy one or more Items';
@@ -43,7 +44,7 @@ $lang['s3_bucket_URL'] = 'Bucket URL';
 $lang['s3_uploads_key'] = 'Upload Key';
 #T
 $lang['type'] = 'Type';
-$lang['type_AWS_S3_Uploads'] = 'AWS S3 Uploads';
+$lang['type_AWSS3'] = 'AWS S3 Module';
 $lang['type_Detail'] = 'Detail';
 $lang['type_Reviews'] = 'Reviews';
 #V

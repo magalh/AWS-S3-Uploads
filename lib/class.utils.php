@@ -1,5 +1,5 @@
 <?php
-namespace AWS_S3_Uploads;
+namespace AWSS3;
 
 require dirname(__DIR__, 1).'/SDK/aws-autoloader.php';
 
@@ -14,7 +14,7 @@ final class utils
 
     public function __construct (){
         $this->mod = self::get_mod();
-        $this->s3Client = self::getS3Client();
+        $this->s3Client = null;
         $this->s3_bucket_name = $this->mod->GetPreference('s3_bucket_name');
         $this->s3_region = $this->mod->GetPreference('s3_region');
         $this->s3_uploads_secret = $this->mod->GetPreference('s3_uploads_secret');
@@ -42,10 +42,11 @@ final class utils
                 }
             }
         } catch (\Exception $e) {
-            $smarty->assign('errormsg',$error_message.' cannot be null or empty.');
+            //$smarty->assign('errormsg',$error_message.' cannot be null or empty.');
             return false;
         }
 
+        $this->s3Client = self::getS3Client();
         if (!$this->s3Client){
             return false;
         }
@@ -87,7 +88,7 @@ final class utils
                 'Bucket' => $bucket_id, 
                 'Key'    => $file_name,
                 'SourceFile' => $file_temp_src,
-                'Tagging' => "Module=CMSMS::AWS_S3_Uploads",
+                'Tagging' => "Module=CMSMS::AWSS3",
                 'ACL'    => 'public-read'
             ]); 
             $result_arr = $result->toArray(); 
@@ -184,7 +185,7 @@ final class utils
     private static function get_mod()
     {
         static $_mod;
-        if( !$_mod ) $_mod = \cms_utils::get_module('AWS_S3_Uploads');
+        if( !$_mod ) $_mod = \cms_utils::get_module('AWSS3');
         return $_mod;
     }
 
@@ -221,7 +222,7 @@ final class utils
     public static function get_file_list($bucket_id,$prefix=null)
     {
 
-        $mod = \cms_utils::get_module('AWS_S3_Uploads');
+        $mod = \cms_utils::get_module('AWSS3');
         $filemod = \cms_utils::get_module('FileManager');
         $showhiddenfiles=$filemod->GetPreference('showhiddenfiles','1');
         $result=array();

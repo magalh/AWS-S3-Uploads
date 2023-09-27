@@ -1,11 +1,11 @@
 <?php
-namespace AWS_S3_Uploads;
+namespace AWSS3;
 
 if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
 header('Content-type: application/json');
-use AWS_S3_Uploads\utils;
+use AWSS3\utils;
 $utils = new utils();
 $mod_fm = \cms_utils::get_module('FileManager');
 $error = 0;
