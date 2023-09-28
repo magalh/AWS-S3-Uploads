@@ -22,17 +22,15 @@ final class utils
         $this->access_key = $this->mod->GetPreference('access_key');
         $this->use_custom_url = $this->mod->GetPreference('use_custom_url');
         $this->custom_url = $this->mod->GetPreference('custom_url');
-        $this->s3_allowed = $this->mod->GetPreference('s3_allowed');
+        $this->s3_allowed = $this->mod->GetPreference('allowed');
     }
 
     public function is_aws_ready() {
 
-        $settings = $this->mod->GetSettingsValues();
-
         $mod = $this->mod;
         $smarty = cmsms()->GetSmarty();
-
-        if(!is_array($settings)) return false;
+        $settings = $this->mod->GetSettingsValues();
+        if(empty($settings)) return false;
 
         $error = null;
 		$data = array('access_key','access_secret_key','bucket_name','access_region');

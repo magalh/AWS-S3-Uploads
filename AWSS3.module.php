@@ -123,7 +123,12 @@ class AWSS3 extends CMSModule
     final public function GetOptionValue($key, $default = '')
     {
         $value = $this->GetPreference($key);
-        return isset($value) ? $value : $default;
+        if(isset($value) && $value !== '') {
+            return $value;
+        } else {
+            return $default;
+        }
+        
     }
     
     final public function SetOptionValue($key, $value) : void
