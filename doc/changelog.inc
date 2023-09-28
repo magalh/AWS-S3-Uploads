@@ -1,5 +1,5 @@
 <ul>
-  <li>1.0.0 - 09/2023
-    <p>Initial Setup.</p>
+  <li>VERSION: 1.0 DATED: 20-JUNE-2023
+    <p>First version of the plugin.</p>
   </li>
 </ul>

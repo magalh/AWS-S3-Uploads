@@ -14,3 +14,11 @@
     padding: 10px 10px 10px 40px;
     margin: 10px 0;
 }
+code.userinput {
+    color: #1d8102;
+    background-color: var(--color-background-layout-main-td853a,#f2f3f3);
+    border-radius: 2px;
+    padding: 0 3px;
+    font-weight: 700;
+    font-size: 1em;
+}

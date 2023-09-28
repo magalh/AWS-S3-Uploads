@@ -62,13 +62,14 @@ $lang['prompt_custom_url'] = 'Custom URL';
 #R
 $lang['reviews'] = 'Reviews';
 $lang['region'] = 'Region';
+$lang['returntomodule'] = 'Return to Module';
 #S
 $lang['submit'] = 'Submit';
 $lang['access_key'] = 'AWS Access Key ID';
 $lang['access_secret_key'] = 'AWS Secret Access Key';
 $lang['bucket_name'] = 'AWS Bucket Name';
 $lang['custom_url'] = 'Custom URL';
-
+$lang['sorry_nofiles'] = 'Sorry, we could not find any files';
 #T
 $lang['type'] = 'Type';
 $lang['type_AWSS3'] = 'AWS S3 Module';

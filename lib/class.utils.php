@@ -6,6 +6,7 @@ require dirname(__DIR__, 1).'/SDK/aws-autoloader.php';
 use Aws\S3\S3Client;  
 use Aws\Exception\AwsException;
 use Aws\Credentials\Credentials;
+use AWSS3\helpers;
 
 final class utils
 {
@@ -75,7 +76,7 @@ final class utils
 		
 	}
 
-    private static function getS3Client(){
+    public static function getS3Client(){
 
         $s3Client = new S3Client([
             'credentials' => self::get_credentials(),
@@ -140,6 +141,30 @@ final class utils
     public function list_my_files(){
         $buckets = $this->s3Client->listBuckets();
         return $buckets['Buckets'];
+    }
+
+    public function get_file($prefix){
+
+        $mod = \cms_utils::get_module('AWSS3');
+        $this->s3Client = self::getS3Client();
+
+        try {
+            $file = $this->s3Client->getObject([
+                'Bucket' => $mod->GetOptionValue("bucket_name"),
+                'Key' => $prefix,
+            ]);
+            $body = $file->get('Body');
+            $body->rewind();
+            echo "Downloaded the file and it begins with: {$body->read(26)}.\n";
+            
+        } catch (AwsException $e) {
+            $errors[] = "Failed to download $file_name from $bucket_name with error: " . $e->getAwsErrorMessage();
+            $errors[] = "Please fix error with file downloading before continuing.";
+        
+            $mod->DisplayErrorMessage($errors);
+
+        }
+
     }
 
     public static function deleteObject($bucket,$keyname){
@@ -382,6 +407,25 @@ final class utils
         }
 
     }
+
+    public static function get_policy(){
+        $mod = self::get_mod();
+        $s3Client = self::getS3Client();
+        $bucket = $mod->GetOptionValue("bucket_name");
+
+        try {
+            $resp = $s3Client->getBucketAcl([
+                'Bucket' => $bucket
+            ]);
+            print_r($resp);
+        } catch (AwsException $e) {
+            // output error message if fails
+            echo $e->getMessage();
+            echo "\n";
+        }
+
+    }
+    
 
     public static function get_iam_policy() : string {
         $mod = self::get_mod();

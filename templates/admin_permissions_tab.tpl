@@ -14,7 +14,7 @@
         <p>Choose <b>Permissions</b>.</p>
       </li><li>
         <p>Choose <b>Edit</b> to change the public access settings for the bucket.
-          For more information about the four Amazon S3 Block Public Access Settings, see <a href="./access-control-block-public-access.html#access-control-block-public-access-options">Block public access
+          For more information about the four Amazon S3 Block Public Access Settings, see <a href="https://docs.aws.amazon.com/AmazonS3/latest/userguide/access-control-block-public-access.html#access-control-block-public-access-options">Block public access
 				settings</a>.</p>
       </li><li>
         <p>Choose the setting that you want to change, and then choose

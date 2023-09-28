@@ -17,7 +17,23 @@ class AWSS3 extends CMSModule
 	
 	public function InitializeFrontend() {
 		$this->RegisterModulePlugin();
-		$this->SetParameterType('biz',CLEAN_STRING);
+        $this->RestrictUnknownParams();
+        $this->RegisterRoute('/[Ss]3\/[Dd]etail\/(?P<id>[0-9]+)\/(?P<returnid>[0-9]+)$/', array('action'=>'detail'));
+        $this->RegisterRoute('/[Ss]3\/[Dd]etail\/(?P<id>[0-9]+)\/(?P<returnid>[0-9]+)\/(?P<feedback_junk>.*?)$/', array('action'=>'detail'));
+
+        $this->SetParameterType('id',CLEAN_STRING);
+        $this->SetParameterType('key2',CLEAN_STRING);
+        $this->SetParameterType('key3',CLEAN_STRING);
+        $this->SetParameterType('title',CLEAN_STRING);
+        $this->SetParameterType('inline',CLEAN_INT);
+        $this->SetParameterType('pagenum',CLEAN_INT);
+        $this->SetParameterType('pagelimit',CLEAN_INT);
+        $this->SetParameterType('summarytemplate',CLEAN_STRING);
+        $this->SetParameterType('sortby',CLEAN_STRING);
+        $this->SetParameterType('sortorder',CLEAN_STRING);
+        $this->SetParameterType('showall',CLEAN_INT);
+        $this->SetParameterType('detailpage',CLEAN_STRING);
+        $this->SetParameterType('detailtemplate',CLEAN_STRING);
 	}
 
 	 public function InitializeAdmin() {
@@ -114,6 +130,15 @@ class AWSS3 extends CMSModule
     {
       $this->SetPreference($key,$value);
     }
+
+    public function _DisplayErrorMessage($errors, string $class = 'alert alert-danger')
+	{
+	  $smarty = cmsms()->GetSmarty();
+	  $tpl = $smarty->CreateTemplate($this->GetTemplateResource('error.tpl'),null,null,$smarty);
+	  $tpl->assign('errorclass', $class);
+	  $tpl->assign('errors', $errors);
+	  $tpl->display();
+	}
 
 }
 
