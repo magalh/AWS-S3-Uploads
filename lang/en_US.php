@@ -48,6 +48,8 @@ $lang['logfilepath'] = 'Please provide your full Log File path, including filena
 $lang['line'] = 'Line';
 #M
 $lang['message'] = 'Message';
+$lang['msg_vrfy_integrityverified'] = 'Connection Established';
+$lang['msg_vrfy_noconn'] = 'Connection Not Established';
 #P
 $lang['prompt_email'] = 'Email Address';
 $lang['postinstall'] = 'AWS S3 Module was installed';
@@ -63,6 +65,8 @@ $lang['prompt_custom_url'] = 'Custom URL';
 $lang['reviews'] = 'Reviews';
 $lang['region'] = 'Region';
 $lang['returntomodule'] = 'Return to Module';
+$lang['required'] = 'Required';
+
 #S
 $lang['submit'] = 'Submit';
 $lang['access_key'] = 'AWS Access Key ID';

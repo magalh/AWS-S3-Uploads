@@ -12,6 +12,7 @@ final class utils
 {
 
     private $s3Client = null;
+    private static $__mod;
 
     public function __construct (){
         $this->mod = self::get_mod();
@@ -22,74 +23,87 @@ final class utils
         $this->access_key = $this->mod->GetPreference('access_key');
         $this->use_custom_url = $this->mod->GetPreference('use_custom_url');
         $this->custom_url = $this->mod->GetPreference('custom_url');
-        $this->s3_allowed = $this->mod->GetPreference('allowed');
+        $this->allowed = $this->mod->GetPreference('allowed');
+        $this->errors = array();
     }
 
-    public function is_aws_ready() {
+    private static function lang()
+    {
+        if( !self::$__mod ) self::$__mod = \cms_utils::get_module('AWSS3');
 
-        $mod = $this->mod;
+        $args = func_get_args();
+        return call_user_func_array(array(self::$__mod,'Lang'),$args);
+    }
+
+    public function validate() {
+
         $smarty = cmsms()->GetSmarty();
         $settings = $this->mod->GetSettingsValues();
         if(empty($settings)) return false;
 
-        $error = null;
-		$data = array('access_key','access_secret_key','bucket_name','access_region');
-		$error_message="";
-
         try {
+            $data = array('access_key','access_secret_key','bucket_name','access_region');
+
             foreach ($data as $key)
             {
-                $item = $mod->GetPreference($key);
+                $item = $this->mod->GetPreference($key);
                 if($item=="" or $item==null)
                 {
-                    $error_message.=$mod->Lang($key).",";
-                }
-                if($error_message!="") {
-                    throw new \Exception($error_message);
-
+                    $this->errors[] = $this->lang($key). " ".$this->lang("required") ;
                 }
             }
-        } catch (\Exception $e) {
-            $message = $error_message.' cannot be null or empty.';
-            $smarty->assign('error',1);
-            $smarty->assign('message',$message);
+            
+            if(!empty($this->errors)){
+                throw new \AWSS3\Exception($this->errors,"slide-danger");
+            }
+
+            $s3 = self::getS3Client();
+            if (is_array($s3) && !$s3['conn']){
+                $this->errors[] = $s3['message'];
+                throw new \AWSS3\Exception($this->errors,"slide-danger");
+            }
+            $this->s3Client = $s3;
+
+            if(!$this->s3Client->doesBucketExist($this->mod->GetPreference('bucket_name'))){
+                $this->errors[] = $this->mod->GetPreference('bucket_name')." does not exist";
+                throw new \AWSS3\Exception($this->errors,"slide-danger");
+            }
+
+            $smarty->assign("bucket_name",$this->mod->GetPreference('bucket_name'));
+            $smarty->assign("bucket_url","https://".$this->mod->GetPreference('bucket_name').".s3.".$this->mod->GetPreference('access_region').".amazonaws.com/");
+            
+            //helpers::_DisplayAdminMessage(null,array(self::lang('msg_vrfy_integrityverified')));
+
+        }
+        catch (\AWSS3\Exception $e) {
+            helpers::_DisplayAdminMessage($e->GetOptions(),$e->GetType());
             return false;
         }
 
-        $this->s3Client = self::getS3Client();
-        if (!$this->s3Client){
-            return false;
-        }
-
-        if(!$this->s3Client->doesBucketExist($mod->GetPreference('bucket_name'))){
-            $smarty->assign('error',1);
-            $smarty->assign('message',$mod->GetPreference('bucket_name')." does not exist");
-            return false;
-        }
-
-        //$this->check_iam_policy();
-
-		
+        $message = helpers::_DisplayAdminMessage($this->lang('msg_vrfy_integrityverified'),"alert-success",1);
+        $smarty->assign("message",$message);
         return true;
-		
 	}
+    
 
     public static function getS3Client(){
 
-        $s3Client = new S3Client([
-            'credentials' => self::get_credentials(),
-            'region' => self::get_mod()->GetPreference('access_region'),
-            'version' => 'latest'
-            ]);
+        $result = array();
+        $result['conn'] = true;
 
         try {
+
+            $s3Client = new S3Client([
+                'credentials' => self::get_credentials(),
+                'region' => self::get_mod()->GetPreference('access_region'),
+                'version' => 'latest'
+                ]);
+
             $buckets = $s3Client->listBuckets();
         } catch (AwsException $e) {
-            $smarty = cmsms()->GetSmarty();
-            $message = $e->getAwsErrorMessage();
-            $smarty->assign('error',1);
-            $smarty->assign('message',$message);
-            return false;
+            $result['conn'] = false;
+            $result['message'] = $e->getAwsErrorMessage();
+            return $result;
         }
 
         return $s3Client;
@@ -234,7 +248,7 @@ final class utils
         return $credentials;
     }
 
-    private static function presignedUrl($bucket_id,$key,$s3Client)
+    public static function presignedUrl($bucket_id,$key,$s3Client)
     {
         $cmd = $s3Client->getCommand('GetObject', [
             'Bucket' => $bucket_id,
@@ -260,9 +274,7 @@ final class utils
     public static function get_file_list($bucket_id,$prefix=null)
     {
 
-        $mod = \cms_utils::get_module('AWSS3');
-        $filemod = \cms_utils::get_module('FileManager');
-        $showhiddenfiles=$filemod->GetPreference('showhiddenfiles','1');
+        $mod = self::get_mod();
         $result=array();
         $config = \cms_config::get_instance();
 
@@ -288,7 +300,7 @@ final class utils
             $smarty->assign('message',$error_message);
         }
 
-        //print_r($contents);
+        //print_r($contents['Contents']);
 
         if(isset($prefix) && $prefix!=''){
 
@@ -334,9 +346,10 @@ final class utils
                 } else {
                     $info['size']=self::formatBytes($content['Size']);
                     $info['date']=strtotime( $content['LastModified'] );
-                    $info['url']=self::presignedUrl($bucket_id,$content['Key'],$s3Client);
-                    //$info['url']= $s3Client->getObjectUrl($bucket_id, $content['Key']);;
-                    //$info['url'] = str_replace('\\','/',$info['url']); // windoze both sucks, and blows.
+                    $info['url']= "https://".$mod->GetPreference('bucket_name').".s3.".$mod->GetPreference('access_region').".amazonaws.com/".$content['Key'];
+                    //$info['presignedUrl']=self::presignedUrl($bucket_id,$content['Key'],$s3Client);
+                    //$info['url']=$s3Client->getObjectUrl($bucket_id,$content['Key']);
+                    $info['url'] = str_replace('\\','/',$info['url']); // windoze both sucks, and blows.
                     $explodedfile=explode('.', $content['Key']); $info['ext']=array_pop($explodedfile);
                 }
             
@@ -357,10 +370,10 @@ final class utils
 
     public static function is_file_acceptable( $file_type )
   {
+      $mod = self::get_mod();
       $file_type = strtolower($file_type);
-      $allowTypes = array('pdf','doc','docx','xls','xlsx','jpg','png','jpeg','gif'); 
+      $allowTypes = array($mod->GetPreference('allowed')); 
       if(!in_array($file_type, $allowTypes)) return FALSE;
-        
       return TRUE;
   }
 

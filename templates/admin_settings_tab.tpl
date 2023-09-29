@@ -1,20 +1,6 @@
 <h3>{$mod->Lang('getstarted')}:</h3>
 
-{if isset($message) && !isset($error)}
-  <div class="alert success">
-  <div class="pageoverflow">
-    <p>{$message}</p>
-  </div>
-  </div>
-{else}
-  {if isset($error)}
-    <div class="alert error">
-    <div class="pageoverflow">
-      <p class="pageerror">{$message}</p>
-    </div>
-    </div>
-  {/if}
-{/if}
+{if isset($message)}{$message}{/if}
 
 {form_start}
 <div class="pageoverflow">

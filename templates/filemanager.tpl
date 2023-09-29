@@ -158,8 +158,8 @@ $(document).ready(function () {
 				<th>{$filenametext}</th>
 				<th>{$mod_fm->Lang('mimetype')}</th>
 				<th class="pageicon" title="{$mod_fm->Lang('title_col_filesize')}" style="text-align:right;">{$filesizetext}</th>
-				<th class="pageicon"></th>
 				<th class="pageicon" title="{$mod_fm->Lang('title_col_filedate')}">{$filedatetext}</th>
+                <th class="pageicon"></th>
 				<th class="pageicon">
 					<input type="checkbox" name="tagall" value="tagall" id="tagall" title="{$mod_fm->Lang('title_tagall')}"/>
 				</th>
@@ -174,8 +174,8 @@ $(document).ready(function () {
 				<td class="clickable" valign="middle">{$file->txtlink}</td>
 				<td class="clickable" valign="middle">{$file->mime}</td>
 				<td class="clickable" style="padding-right:8px;white-space:pre;text-align:right;" valign="middle">{$file->filesize}</td>
-				<td class="clickable" style="padding-right:8px;" valign="middle">{if isset($file->filesizeunit)}{$file->filesizeunit}{else}&nbsp;{/if}</td>
-				<td class="clickable" style="padding-right:8px;white-space:pre;" valign="middle">{$thedate}</td>
+                <td class="clickable" style="padding-right:8px;white-space:pre;" valign="middle">{$thedate}</td>
+				<td><a href="{cms_action_url action="signed_url" key=$file->name}">{$file->openlink} {*admin_icon icon='view.gif' alt="Open"*}</a></td>
 				<td>
 				{if !isset($file->noCheckbox)}
 					<label for="x_{$file->urlname}" style="display: none;">{$mod_fm->Lang('toggle')}</label>

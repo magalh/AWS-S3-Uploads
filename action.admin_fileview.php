@@ -133,9 +133,12 @@ for ($i = 0; $i < count($filelist); $i++) {
 
   if ($filelist[$i]["dir"]) {
     $onerow->filesize = "&nbsp;";
+    $onerow->openlink = "&nbsp;";
   } else {
     $filesize = '';
     $onerow->filesize = $filelist[$i]["size"];
+    $openlink = $this->Create_url($id,'signed_url','',array('key'=>$filelist[$i]["name"]));
+    $onerow->openlink = "<a class=\"filelink\" href='" . $openlink . "' target='_blank' title=\"".$mod_fm->Lang('title_view_newwindow')."\"><img src=\"" . \cms_admin_utils::get_icon('view.gif') . "\"\></a>";
   }
 
   if (!$filelist[$i]["dir"]) {

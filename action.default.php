@@ -52,6 +52,7 @@ $mams = \cms_utils::get_module('MAMS');
 if( $mams ) $mams_uid = $mams->LoggedInId();
 
 print_r($params);
+throw new \RuntimeException('This file cannot be called directly');
 
 $filename = xt_param::get_string($params,'filename',$filename);
 $inline = xt_param::get_bool($params,'inline',$inline);

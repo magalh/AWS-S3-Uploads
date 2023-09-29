@@ -4,7 +4,7 @@ namespace AWSS3;
 final class helpers
 {
 
-    private function __construct() {}
+    public function __construct() {}
 
     public static function find_layout_template($params, $paramname, $typename)
     {
@@ -24,16 +24,46 @@ final class helpers
         return $thetemplate;
     }
 
-    public static function _DisplayAdminMessage($errors = array(), $messages=array())
+    public static function _DisplayAdminMessage($options,$type="alert-danger",$fetch=null)
 	{
-      //helpers::_DisplayAdminMessage($errors,$messages);
+      //helpers::_DisplayAdminMessage($error,$class);
       $mod = \cms_utils::get_module("AWSS3");
 	  $smarty = cmsms()->GetSmarty();
 	  $tpl = $smarty->CreateTemplate($mod->GetTemplateResource('messages.tpl'),null,null,$smarty);
-	  $tpl->assign('errors', $errors);
-	  $tpl->assign('messages', $messages);
-	  $tpl->display();
+
+      switch ($type) {
+            case "alert-primary":
+                $class = "alert ".$type;
+                break;
+            case "alert-success":
+                $class = "alert ".$type;
+                break;
+            case "alert-warning":
+                $class = "alert ".$type;
+                break;
+            case "alert-danger":
+                $class = "alert ".$type;
+                break;
+            case "slide-danger":
+                $class = "message pageerrorcontainer";
+                break;
+            case "slide-success":
+                $class = "message pagemcontainer";
+                break;
+        }
+
+        $tpl->assign('class', $class);
+        $tpl->assign('options', $options);
+	  
+        if(isset($fetch)){
+            $out = $tpl->fetch();
+            return $out;
+        } else {
+            $tpl->display();
+        }
+      
 	}
+    
   
 }
 ?>

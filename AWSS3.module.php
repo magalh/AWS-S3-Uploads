@@ -144,6 +144,7 @@ class AWSS3 extends CMSModule
 	  $tpl->assign('errors', $errors);
 	  $tpl->display();
 	}
+    
 
 }
 

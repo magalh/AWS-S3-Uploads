@@ -7,13 +7,7 @@
      text-decoration: underline!important;
 }
 
-.alert.success, .alert.error {
-    display: inline-block;
-    width: auto;
-    font-size: 14px;
-    padding: 10px 10px 10px 40px;
-    margin: 10px 0;
-}
+
 code.userinput {
     color: #1d8102;
     background-color: var(--color-background-layout-main-td853a,#f2f3f3);
@@ -21,4 +15,41 @@ code.userinput {
     padding: 0 3px;
     font-weight: 700;
     font-size: 1em;
+}
+.alert {
+    position: relative;
+    padding: 0.75rem 1.25rem;
+    margin-bottom: 1rem;
+    border: 1px solid transparent;
+    border-radius: 0.25rem;
+}
+.alert-primary {
+    color: #004085;
+    background-color: #cce5ff;
+    border-color: #b8daff;
+}
+.alert-secondary {
+    color: #383d41;
+    background-color: #e2e3e5;
+    border-color: #d6d8db;
+}
+.alert-success {
+    color: #155724;
+    background-color: #d4edda;
+    border-color: #c3e6cb;
+}
+.alert-danger {
+    color: #721c24;
+    background-color: #f8d7da;
+    border-color: #f5c6cb;
+}
+.alert-warning {
+    color: #856404;
+    background-color: #fff3cd;
+    border-color: #ffeeba;
+}
+.alert-info {
+    color: #0c5460;
+    background-color: #d1ecf1;
+    border-color: #bee5eb;
 }
