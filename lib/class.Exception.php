@@ -14,9 +14,18 @@ class Exception extends \Exception
         $this->_type = $type;
     }
 
-    public function GetOptions() { return $this->_options; }
+    public function getOptions() { return $this->_options; }
 
-    public function GetType() { return $this->_type; }
+    public function getText() { 
+
+        if (is_array($this->_options)) {
+            return implode("<br>",$this->_options);
+        } else {
+            return $this->_options; 
+        }
+    }
+
+    public function getType() { return $this->_type; }
 }
 
 ?>

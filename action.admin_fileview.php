@@ -38,10 +38,9 @@ if ($sortby == "nameasc") {
   if ($sortby == "namedesc") $titlelink.="-";
 }
 $params["newsort"] = $newsort;
-$titlelink = $this->CreateLink($id, "defaultadmin", $returnid, $titlelink, $params);
 $smarty->assign('filenametext', $titlelink);
-$titlelink = $mod_fm->Lang("filesize");
-$titlelink = $this->CreateLink($id, "defaultadmin", $returnid, $titlelink, $params);
+$titlelink = $this->CreateLink($id, "defaultadmin", $returnid, $mod_fm->Lang("filesize"), array());
+
 $smarty->assign('filesizetext', $titlelink);
 $smarty->assign('fileownertext', $mod_fm->Lang("fileowner"));
 $smarty->assign('filepermstext', $mod_fm->Lang("fileperms"));

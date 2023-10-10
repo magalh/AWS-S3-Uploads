@@ -76,11 +76,11 @@ final class utils
 
         }
         catch (\AWSS3\Exception $e) {
-            helpers::_DisplayAdminMessage($e->GetOptions(),$e->GetType());
+            $this->mod->_DisplayMessage($e->getText(),$e->getType());
             return false;
         }
 
-        $message = helpers::_DisplayAdminMessage($this->lang('msg_vrfy_integrityverified'),"alert-success",1);
+        $message = $this->mod->_DisplayMessage($this->lang('msg_vrfy_integrityverified'),"success",1);
         $smarty->assign("message",$message);
         return true;
 	}
@@ -103,6 +103,7 @@ final class utils
         } catch (AwsException $e) {
             $result['conn'] = false;
             $result['message'] = $e->getAwsErrorMessage();
+            print_r($result);
             return $result;
         }
 
@@ -150,7 +151,8 @@ final class utils
         return $newphrase;
      }
 
-    public function list_my_files(){
+    
+     public function list_my_files(){
         $buckets = $this->s3Client->listBuckets();
         return $buckets['Buckets'];
     }
@@ -205,10 +207,6 @@ final class utils
 
     public static function deleteObjectDir($bucket_id,$dir){
         $s3 = self::getS3Client();
-
-/*        $dir = rtrim($dir, "/");
-        $dir = ltrim($dir, "/");
-        $dir = $dir . "/";*/
     
         $keys = $s3->listObjects([
             'Bucket' => $bucket_id,
@@ -234,22 +232,21 @@ final class utils
     
     }
     
-    private static function get_mod()
-    {
+    public static function get_mod(){
         static $_mod;
         if( !$_mod ) $_mod = \cms_utils::get_module('AWSS3');
         return $_mod;
     }
 
-    private static function get_credentials()
-    {
+    private static function get_credentials(){
         $mod = self::get_mod();
         $credentials = new Credentials($mod->GetPreference('access_key'),$mod->GetPreference('access_secret_key'));
         return $credentials;
     }
 
-    public static function presignedUrl($bucket_id,$key,$s3Client)
-    {
+    public static function presignedUrl($bucket_id,$key){
+
+        $s3Client = self::getS3Client();
         $cmd = $s3Client->getCommand('GetObject', [
             'Bucket' => $bucket_id,
             'Key' => $key
@@ -270,9 +267,7 @@ final class utils
         }
     }
 
-
-    public static function get_file_list($bucket_id,$prefix=null)
-    {
+    public static function get_file_list($bucket_id,$prefix=null){
 
         $mod = self::get_mod();
         $result=array();
@@ -350,7 +345,8 @@ final class utils
                     //$info['presignedUrl']=self::presignedUrl($bucket_id,$content['Key'],$s3Client);
                     //$info['url']=$s3Client->getObjectUrl($bucket_id,$content['Key']);
                     $info['url'] = str_replace('\\','/',$info['url']); // windoze both sucks, and blows.
-                    $explodedfile=explode('.', $content['Key']); $info['ext']=array_pop($explodedfile);
+                    $explodedfile=explode('.', $content['Key']); 
+                    $info['ext']=array_pop($explodedfile);
                 }
             
             // test for archive
@@ -366,6 +362,82 @@ final class utils
             }
 
         return $result;
+    }
+
+    public static function get_files($options)
+    {
+
+        $mod = self::get_mod();
+        $result=array();
+        $s3Client = self::getS3Client();
+
+        try {
+
+            $contents = $s3Client->listObjectsV2($options);
+
+            if(isset($options['Prefix']) && $options['Prefix']!==''){
+
+                $onerow = new \stdClass();
+                $onerow->name = '..';
+                $onerow->dir = true;
+                $onerow->mime = 'directory';
+                $onerow->ext = '';
+                $result[]=$onerow;
+    
+            }
+    
+            //Directories
+            foreach ($contents['CommonPrefixes'] as $dir) {
+    
+                $onerow = new \stdClass();
+                $onerow->name = $dir['Prefix'];
+                $onerow->dir = true;
+                $onerow->mime = 'directory';
+                $onerow->ext = '';
+    
+                $result[]=$onerow;
+    
+            }
+
+            foreach ($contents['Contents'] as $content) {
+
+                $onerow = new \stdClass();
+    
+                $cmd = $s3Client->headObject([
+                    'Bucket' => $options['Bucket'],
+                    'Key' => $content['Key']
+                ]);
+    
+                $onerow->name = $content['Key'];
+                $onerow->dir = FALSE;
+                $onerow->image = FALSE;
+                $onerow->archive = FALSE;
+                $onerow->mime = $cmd['ContentType'];
+    
+                $onerow->size=self::formatBytes($content['Size']);
+                $onerow->date=strtotime( $content['LastModified'] );
+                $onerow->url= "https://".$mod->GetPreference('bucket_name').".s3.".$mod->GetPreference('access_region').".amazonaws.com/".$content['Key'];
+                $onerow->iconlink = $mod->CreatePrettyLink($content['Key']);
+                //$onerow->presignedUrl']=self::presignedUrl($bucket_id,$content['Key'],$s3Client);
+                //$onerow->url']=$s3Client->getObjectUrl($bucket_id,$content['Key']);
+                $onerow->url = str_replace('\\','/',$onerow->url); // windoze both sucks, and blows.
+                $explodedfile=explode('.', $content['Key']); $onerow->ext=array_pop($explodedfile);
+                
+    
+                $result[]=$onerow;
+    
+            }
+
+            return $result;
+
+        } catch (\Exception $e) {
+            $mod->_DisplayMessage($e->getMessage());
+            return;
+            //throw new \Exception($error_message);
+        }
+
+        
+        
     }
 
     public static function is_file_acceptable( $file_type )
@@ -399,6 +471,8 @@ final class utils
         
 
     }
+
+    
 
     private function put_iam_policy() {
 

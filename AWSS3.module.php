@@ -18,10 +18,11 @@ class AWSS3 extends CMSModule
 	public function InitializeFrontend() {
 		$this->RegisterModulePlugin();
         $this->RestrictUnknownParams();
-        $this->RegisterRoute('/[Ss]3\/[Dd]etail\/(?P<id>[0-9]+)\/(?P<returnid>[0-9]+)$/', array('action'=>'detail'));
-        $this->RegisterRoute('/[Ss]3\/[Dd]etail\/(?P<id>[0-9]+)\/(?P<returnid>[0-9]+)\/(?P<feedback_junk>.*?)$/', array('action'=>'detail'));
+
+        $this->RegisterRoute('/[Aa]wss3\/[Ss]\/(?P<key>.*?)$/', array('action'=>'signed'));
 
         $this->SetParameterType('id',CLEAN_STRING);
+        $this->SetParameterType('key',CLEAN_STRING);
         $this->SetParameterType('key2',CLEAN_STRING);
         $this->SetParameterType('key3',CLEAN_STRING);
         $this->SetParameterType('title',CLEAN_STRING);
@@ -136,6 +137,11 @@ class AWSS3 extends CMSModule
       $this->SetPreference($key,$value);
     }
 
+    public function getHelpers()
+	{
+	  return \AWSS3\Helpers::getInstance();
+	}
+
     public function _DisplayErrorMessage($errors, string $class = 'alert alert-danger')
 	{
 	  $smarty = cmsms()->GetSmarty();
@@ -144,6 +150,118 @@ class AWSS3 extends CMSModule
 	  $tpl->assign('errors', $errors);
 	  $tpl->display();
 	}
+
+    public function _DisplayMessage($message,$type="alert-danger",$fetch=null)
+	{
+      //helpers::_DisplayAdminMessage($error,$class);
+      $mod = \cms_utils::get_module("AWSS3");
+	  $smarty = cmsms()->GetSmarty();
+	  $tpl = $smarty->CreateTemplate($mod->GetTemplateResource('message.tpl'),null,null,$smarty);
+
+      switch ($type) {
+            case ($type == "alert-info" || $type == "info"):
+                $class = "alert alert-info";
+                break;
+            case ($type == "alert-success" || $type == "success" || $type == 200):
+                $class = "alert alert-success";
+                break;
+            case ($type == "alert-warning" || $type == "warning"):
+                $class = "alert alert-warning";
+                break;
+            case ($type == "alert-danger" || $type == "error" || $type == 500):
+                $class = "alert alert-danger";
+                audit('', 'AWSS3 Error', substr( $message,0 ,200 ) );
+                break;
+            case "slide-danger":
+                $class = "message pageerrorcontainer";
+                audit('', 'AWSS3 Error', substr( $message,0 ,200 ) );
+                break;
+            case "slide-success":
+                $class = "message pagemcontainer";
+                break;
+        }
+
+        $tpl->assign('errorclass', $class);
+        $tpl->assign('message', $message);
+	  
+        if(isset($fetch)){
+            $out = $tpl->fetch();
+            return $out;
+        } else {
+            $tpl->display();
+        }
+      
+	}
+
+
+    public static function page_type_lang_callback($str)
+    {
+        $mod = cms_utils::get_module('AWSS3');
+        if( is_object($mod) ) return $mod->Lang('type_'.$str);
+    }
+
+    public static function template_help_callback($str)
+    {
+        $str = trim($str);
+        $mod = cms_utils::get_module('AWSS3');
+        if( is_object($mod) ) {
+            $file = $mod->GetModulePath().'/doc/help.inc';
+            if( is_file($file) ) return file_get_contents($file);
+        }
+    }
+
+    public static function reset_page_type_defaults(CmsLayoutTemplateType $type)
+    {
+        if( $type->get_originator() != 'AWSS3' ) throw new CmsLogicException('Cannot reset contents for this template type');
+
+        $fn = null;
+        switch( $type->get_name() ) {
+        case 'summary':
+            $fn = 'orig_summary_template.tpl';
+            break;
+
+        case 'detail':
+            $fn = 'orig_detail_template.tpl';
+            break;
+
+        case 'form':
+            $fn = 'orig_form_template.tpl';
+            break;
+
+        case 'browsecat':
+            $fn = 'browsecat.tpl';
+        }
+
+        $fn = cms_join_path(__DIR__,'templates',$fn);
+        if( file_exists($fn) ) return @file_get_contents($fn);
+    }
+
+    public function CreatePrettyLink($name)
+    {
+        $base_url = CMS_ROOT_URL;
+        $out = $base_url."/awss3/detail/".$name;
+
+ 
+        return $out;
+    }
+
+    public function CreateSignedLink($name)
+    {
+        $base_url = CMS_ROOT_URL;
+        $name = $this->encodefilename($name);
+        $out = $base_url."/awss3/s/".$name;
+
+        return $out;
+    }
+
+    protected function encodefilename($filename) {
+        return base64_encode(sha1($this->config['dbpassword'].__FILE__.$filename).'|'.$filename);
+    }
+
+    protected function decodefilename($encodedfilename) {
+        list($sig,$filename) = explode('|',base64_decode($encodedfilename),2);
+        if( sha1($this->config['dbpassword'].__FILE__.$filename) == $sig ) return $filename;
+    }
     
 
 }

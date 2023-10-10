@@ -11,10 +11,12 @@ $mod_fm = \cms_utils::get_module('FileManager');
 if($utils->validate()){
 	$ready = 1;
 	$bucket_id = $this->GetOptionValue('bucket_name');
+} else {
+	$ready = 0;
 }
 
 echo $this->StartTabHeaders();
-	if($ready){
+	if($ready == 1){
 		echo $this->SetTabHeader($bucket_id,$bucket_id);
 		echo $this->SetTabHeader('permissions',"Permissions");
 	}

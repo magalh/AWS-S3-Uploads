@@ -5,9 +5,12 @@ $lang['ask_uninstall'] = 'Are you sure you want to uninstall the AWS S3 Uploads 
 $lang['admin_save'] = "Save";
 $lang['access_key'] = 'Access keys';
 $lang['allowed'] = 'Allowed';
+$lang['author_label'] = 'Posted by:';
+
 #B
 $lang['bucket_name'] = 'Bucket Name';
 #C
+$lang['category_label'] = 'Category:';
 $lang['cancel'] = 'Cancel';
 $lang['config'] = 'AWS S3 Module Configuration';
 #D
@@ -16,7 +19,7 @@ $lang['delete'] = 'Delete';
 #E
 $lang['error'] = 'Error';
 #F
-$lang['friendlyname'] = 'AWS S3 Module';
+$lang['friendlyname'] = 'AWSS3 Module';
 $lang['file'] = 'File';
 $lang['fielddef_allow_help'] = 'Specify a comma separated list of file extensions that are allowed. For example: pdf,gif,jpeg,jpg (keep lowercase)';
 #G
@@ -51,6 +54,7 @@ $lang['message'] = 'Message';
 $lang['msg_vrfy_integrityverified'] = 'Connection Established';
 $lang['msg_vrfy_noconn'] = 'Connection Not Established';
 #P
+$lang['page'] = 'Page';
 $lang['prompt_email'] = 'Email Address';
 $lang['postinstall'] = 'AWS S3 Module was installed';
 $lang['postrotate'] = 'Action for after image rotation';
@@ -60,6 +64,13 @@ $lang['prompt_dropfiles'] = 'Drop files here to upload';
 $lang['prompt_move'] = 'Move Items to Another Directory';
 $lang['prompt_use_custom_url'] = 'Use Custom URL';
 $lang['prompt_custom_url'] = 'Custom URL';
+$lang['firstpage'] = '&lt;&lt;';
+$lang['prevpage'] = '&lt;';
+$lang['nextpage'] = '&gt;';
+$lang['lastpage'] = '&gt;&gt;';
+$lang['prompt_of'] = 'of';
+$lang['prompt_page'] = 'Page';
+$lang['prompt_pagelimit'] = 'Page Limit';
 
 #R
 $lang['reviews'] = 'Reviews';
@@ -76,8 +87,9 @@ $lang['custom_url'] = 'Custom URL';
 $lang['sorry_nofiles'] = 'Sorry, we could not find any files';
 #T
 $lang['type'] = 'Type';
-$lang['type_AWSS3'] = 'AWS S3 Module';
-$lang['type_Detail'] = 'Detail';
+$lang['type_AWSS3'] = 'AWSS3';
+$lang['type_detail'] = 'Detail';
+$lang['type_summary'] = 'Summary';
 $lang['type_Reviews'] = 'Reviews';
 #V
 $lang['VALIDATION_ERROR'] = 'Please provide your Log File path';

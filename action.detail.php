@@ -36,35 +36,31 @@
 #-------------------------------------------------------------------------
 #END_LICENSE
 if( !defined('CMS_VERSION') ) exit;
-use AWSS3\utils;
-use AWSS3\helpers;
 
-$utils = new utils();
-
-print_r($params);
-// check input data
-if( !isset($params['id']) ) {
-	//throw new \Exception('Upload id not specified');
-	$errors[] = 'Upload id not specified';
-	$this->_DisplayErrorMessage($errors);
-}
-
-
-$s3Client = utils::getS3Client();
+$helpers = $this->GetHelpers();
 
 try {
+
+	if( !isset($params['key']) ) {
+		
+		throw new \AWSS3\Exception('Upload id not specified',500);
+		//$errors[] = 'Upload id not specified';
+		//$this->_DisplayErrorMessage($errors);
+	}
+
+	$bucket_id = $this->GetOptionValue("bucket_id");
+	$onerow->url_presigned = utils::presignedUrl($bucket_id,$params['key']);
+
+	$s3Client = \AWSS3\utils::getS3Client();
+
 	$bucket = $this->GetOptionValue("bucket_name");
-	$file = $s3Client->getObjectUrl($bucket,$params['id']);
+	$file = $s3Client->getObjectUrl($bucket,$params['key']);
 	//$body = $file->get('Body');
 	//$body->rewind();
 	print_r($file);
 	
-} catch (Exception $e) {
-	$errors[] = "Failed to download $file_name from $bucket_name with error: " . $e->getAwsErrorMessage();
-	$errors[] = "Please fix error with file downloading before continuing.";
-
-	$this->_DisplayErrorMessage($errors);
-
+} catch (\AWSS3\Exception $e) {
+	$this->_DisplayMessage($e->getText(),$e->getType());
 }
 
 ?>
