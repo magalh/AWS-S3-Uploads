@@ -78,7 +78,7 @@ $mod_fm = \cms_utils::get_module('FileManager');
     $pagecount = -1;
     $startelement = 0;
     $pagenumber = 1;
-    $prefix = '';
+    $prefix = $params['prefix']?$params['prefix']:'';
 
     if( isset( $params['pagenumber'] ) && $params['pagenumber'] != '' ) {
         // if given a page number, determine a start element

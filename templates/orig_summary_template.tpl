@@ -28,7 +28,7 @@
 {/if}
 {foreach from=$items item=entry}
   {if $entry->dir}
-    <li class="list-group-item"><a href="{cms_action_url prefix=$entry->key}" class="card-link">{$entry->icon} {$entry->name}</a></li>
+    <li class="list-group-item"><a href="{cms_action_url newdir=$entry->key}" class="card-link">{$entry->icon} {$entry->name}</a></li>
   {else}
     <li class="list-group-item">{$entry->presigned_icon_link} {$entry->presigned_link}</li>
   {/if}
