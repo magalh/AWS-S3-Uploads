@@ -254,6 +254,15 @@ class AWSS3 extends CMSModule
         return $out;
     }
 
+    public function getCacheFile($bucket_id,$prefix)
+    {
+        $config = \cms_config::get_instance();
+        $json_file_name = 'awss3_'.$this->encodefilename($bucket_id.'_'.str_replace('/', '_', $prefix)).'.cms';
+        $json_file_Path = $config['tmp_cache_location'].'/'.$json_file_name;
+
+        return $json_file_Path;
+    }
+
     protected function encodefilename($filename) {
         return base64_encode(sha1($this->config['dbpassword'].__FILE__.$filename).'|'.$filename);
     }

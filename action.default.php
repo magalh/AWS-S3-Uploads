@@ -39,25 +39,32 @@ if( !defined('CMS_VERSION') ) exit;
 
 use \AWSS3\utils;
 use \AWSS3\bucket_query;
+use \AWSS3\encrypt;
 
-$template = null;
-if (isset($params['summarytemplate'])) {
-    $template = trim($params['summarytemplate']);
-}
-else {
-    $tpl = CmsLayoutTemplate::load_dflt_by_type('AWSS3::summary');
-    if( !is_object($tpl) ) {
-        audit('',$this->GetName(),'No default summary template found');
-        return;
-    }
-    $template = $tpl->get_name();
-}
+
+$mod_fm = \cms_utils::get_module('FileManager');
 
     $bucket_id = $this->GetOptionValue('bucket_name');
+    $nminutes     = (int)$this->GetPreference('expiry_interval', 180);
+    if ($nminutes == '') $nminutes = 0;
+
     if(!isset($bucket_id) || empty($bucket_id)) {
         //throw new CmsException('no bucket selected');
         $this->_DisplayMessage('no bucket selected',500);
         return;
+    }
+
+    $template = null;
+    if (isset($params['summarytemplate'])) {
+        $template = trim($params['summarytemplate']);
+    }
+    else {
+        $tpl = CmsLayoutTemplate::load_dflt_by_type('AWSS3::summary');
+        if( !is_object($tpl) ) {
+            audit('',$this->GetName(),'No default summary template found');
+            return;
+        }
+        $template = $tpl->get_name();
     }
 
     $template = 'orig_summary_template.tpl';
@@ -67,93 +74,124 @@ else {
     if( isset( $params['pagelimit'] ) ) {
         $pagelimit = (int) ($params['pagelimit']);
     }
-    else if( isset( $params['number'] ) ) {
-        $pagelimit = (int) ($params['number']);
-    }
     $pagelimit = max(1,min(1000,$pagelimit)); // maximum of 1000 entries.
     $pagecount = -1;
     $startelement = 0;
     $pagenumber = 1;
-    $token_prev = '';
-    $qparms = array();
+    $prefix = '';
 
     if( isset( $params['pagenumber'] ) && $params['pagenumber'] != '' ) {
         // if given a page number, determine a start element
         $pagenumber = (int)$params['pagenumber'];
         $startelement = ($pagenumber-1) * $pagelimit;
-
-        //$qparms['StartAfter'] = $startelement;
     }
 
+    if( isset( $params['newdir'] ) && $params['newdir'] != '' ) {
+        $newdir = $params['newdir'];
+        $updir = dirname($newdir,2)=='.' ? '' : dirname($newdir,2);
+        $icon = $mod_fm->GetModuleURLPath().'/icons/themes/default/actions/dir_up.gif';
+        $img_tag = '<img src="'.$icon.'" width="32" title="'.$this->Lang('title_changeupdir').'"/>';
+        $diriconlink = $this->CreateFrontendLink($id,$returnid, 'default', $img_tag, array('newdir'=>$updir));
+        $dirlink = "<a class=\"dirlink\" href=\"{$url}\" title=\"{$this->Lang('title_changeupdir')}\">..</a>";
+
+        $tpl_ob->assign('newdir',$newdir);
+        $tpl_ob->assign('updir',$updir);
+        $tpl_ob->assign('dirlink',$dirlink);
+        $tpl_ob->assign('diriconlink',$diriconlink);
+    }
+
+    $qparms = array();
     $qparms['Bucket'] = $bucket_id;
-    $qparms['Prefix'] = 'files/';
+    $qparms['Prefix'] = $prefix;
     $qparms['Delimiter'] = '/';
     $qparms['MaxKeys'] = $pagelimit;
-    if(isset($params['ContinuationToken'])) {
-        $qparms['ContinuationToken'] = $params['ContinuationToken'];
+
+    $json_file_Path = $this->getCacheFile($bucket_id,$prefix);
+
+    if($nminutes == 0) {
+        $data = bucket_query::cache_query($qparms,$json_file_Path);
+    } else {
+        
+        if (!file_exists($json_file_Path)) {
+            $data = bucket_query::cache_query($qparms,$json_file_Path);
+        } else {
+
+            $json = file_get_contents($json_file_Path);
+            $tmp = encrypt::decrypt($json);
+            $data = json_decode($tmp, false);
+        
+            $enddate  = strtotime(sprintf("+%d minutes", $nminutes), $data->date);
+            if (time() >= $enddate) {
+                $data = bucket_query::cache_query($qparms,$json_file_Path);
+            }
+
+        }
     }
 
-    //print_r($qparms);
-
-    $query = new bucket_query($qparms);
-    $query_resp = $query->execute();
-
-    $count = isset($query_resp['total']) ? $query_resp['total'] : '0';
-
-    // determine a number of pages
+    $count = isset($data->total) ? $data->total : '0';
     $pagecount = (int)($count / $pagelimit);
     if( ($count % $pagelimit) != 0 ) $pagecount++;
     
+    // Assign some pagination variables to smarty
+    if( $pagenumber == 1 ) {
+        $tpl_ob->assign('prevpage',$this->Lang('prevpage'));
+        $tpl_ob->assign('firstpage',$this->Lang('firstpage'));
+    }
+    else {
+        $params['pagenumber']=$pagenumber-1;
+        $tpl_ob->assign('prevpage',$this->CreateFrontendLink($id,$returnid,'default',$this->Lang('prevpage'),$params));
+        $tpl_ob->assign('prevurl',$this->CreateFrontendLink($id,$returnid,'default','',$params, '', true));
+        $params['pagenumber']=1;
+        $tpl_ob->assign('firstpage',$this->CreateFrontendLink($id,$returnid,'default',$this->Lang('firstpage'),$params));
+        $tpl_ob->assign('firsturl',$this->CreateFrontendLink($id,$returnid,'default','',$params, '', true));
+    }
+
     if( $pagenumber >= $pagecount ) {
         $tpl_ob->assign('nextpage',$this->Lang('nextpage'));
         $tpl_ob->assign('lastpage',$this->Lang('lastpage'));
     }
     else {
-
         $params['pagenumber']=$pagenumber+1;
-        $params['ContinuationToken'] = $query_resp['NextContinuationToken'];
-
-        if( $pagenumber == 1 ) {
-            $this->SetOptionValue('token_prev', '');
-            $this->SetOptionValue('token_now', '');
-            $this->SetOptionValue('token_next', $query_resp['NextContinuationToken']);
-            $tpl_ob->assign('prevurl',$this->Lang('firstpage'));
-            $tpl_ob->assign('lasturl',$this->CreateFrontendLink($id,$returnid,'default','',$params, '', true));
-        }
-        if( $pagenumber == 2 ) {
-            $this->SetOptionValue('token_prev', '');
-            $this->SetOptionValue('token_now', $query_resp['ContinuationToken']);
-            $this->SetOptionValue('token_next', $query_resp['NextContinuationToken']);
-            $params['pagenumber']=$pagenumber+1;
-            $tpl_ob->assign('lasturl',$this->CreateFrontendLink($id,$returnid,'default','',$params, '', true));
-            $params['pagenumber']=$pagenumber-1;
-            unset($params['ContinuationToken']);
-            $tpl_ob->assign('prevurl',$this->CreateFrontendLink($id,$returnid,'default','',$params, '', true));
-        } else {
-            $this->SetOptionValue('token_prev', $this->GetOptionValue('token_now'));
-            $this->SetOptionValue('token_now', $query_resp['ContinuationToken']);
-            $this->SetOptionValue('token_next', $query_resp['NextContinuationToken']);
-            $params['pagenumber']=$pagenumber+1;
-            $tpl_ob->assign('lasturl',$this->CreateFrontendLink($id,$returnid,'default','',$params, '', true));
-            $params['pagenumber']=$pagenumber-1;
-            $params['ContinuationToken'] = $this->GetOptionValue('token_prev');
-            $tpl_ob->assign('prevurl',$this->CreateFrontendLink($id,$returnid,'default','',$params, '', true));
-        }
-        
-
+        $tpl_ob->assign('nextpage',$this->CreateFrontendLink($id,$returnid,'default',$this->Lang('nextpage'),$params));
+        $tpl_ob->assign('nexturl',$this->CreateFrontendLink($id,$returnid,'default','',$params, '', true));
+        $params['pagenumber']=$pagecount;
+        $tpl_ob->assign('lastpage',$this->CreateFrontendLink($id,$returnid,'default',$this->Lang('lastpage'),$params));
+        $tpl_ob->assign('lasturl',$this->CreateFrontendLink($id,$returnid,'default','',$params, '', true));
     }
+
+    $tpl_ob->assign('bucket',$bucket_id);
+    $tpl_ob->assign('cachefile',$json_file_Path);
+    $tpl_ob->assign('lastupdate', $data->date);
     $tpl_ob->assign('pagenumber',$pagenumber);
     $tpl_ob->assign('pagecount',$pagecount);
     $tpl_ob->assign('oftext',$this->Lang('prompt_of'));
     $tpl_ob->assign('pagetext',$this->Lang('prompt_page'));
-    $tpl_ob->assign('token_prev',$this->GetOptionValue('token_prev'));
-    $tpl_ob->assign('token_now',$this->GetOptionValue('token_now'));
-    $tpl_ob->assign('token_next',$this->GetOptionValue('token_next'));
 
-    $tpl_ob->assign('itemcount', $query_resp['itemcount']);
-    $tpl_ob->assign('items', $query_resp['data']);
+    $tpl_ob->assign('itemcount', $data->itemcount);
+    $tpl_ob->assign('items', $data->pages->{$pagenumber}->items);
     $tpl_ob->assign('count', $count);
-    $tpl_ob->assign('marker', $entry->key);
+    $tpl_ob->assign('startdate', $data->date);
+    $tpl_ob->assign('enddate', $enddate);
+    $tpl_ob->assign('cachetime', $nminutes);
+
+    $explodedprefix=explode('/', $prefix); 
+    $path_parts = [];
+    for( $i = 0; $i < count($explodedprefix); $i++ ) {
+        $obj = new \StdClass;
+        if( !$explodedprefix[$i] ) continue;
+        $obj->name = $explodedprefix[$i];
+        if( $i < count($explodedprefix) - 1 ) {
+            // not the last entry
+            $fullpath = implode('/',array_slice($explodedprefix,0,$i+1));
+            $obj->url = $this->CreateFrontendLink($id,$returnid,'default','',array('prefix'=>$fullpath.'/'), '', true);
+        } else {
+            // the last entry... no link
+        }
+        $path_parts[] = $obj;
+    }
+
+    $smarty->assign('path_parts',$path_parts);
+
 
     $tpl_ob->display();
 

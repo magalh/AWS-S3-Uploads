@@ -35,6 +35,12 @@
 	  <input type="text" name="{$actionid}settings_input[allowed]" value="{$mod->GetOptionValue('allowed', 'pdf,doc,docx,xls,xlsx,jpg,png,jpeg,gif')}" size="50" maxlength="200"/>
   </p>
 </div>
+<div class="pageoverflow">
+		<p class="pagetext"><label for="fld5">{$mod->Lang('expiry_interval')}:</label> {cms_help key='help_opt_expiry_interval' title=$mod->Lang('expiry_interval')}</p>
+		<p class="pageinput">
+        <input type="text" name="{$actionid}settings_input[expiry_interval]" value="{$mod->GetOptionValue("expiry_interval")|default:60}" size="4" maxlength="4"/>
+      </p>
+	</div>
 <fieldset>
   <legend>{$mod->Lang('prompt_custom_url')}</legend>
   <div class="pageoverflow">

@@ -18,6 +18,7 @@ $lang['date'] = 'Date';
 $lang['delete'] = 'Delete';
 #E
 $lang['error'] = 'Error';
+$lang['expiry_interval'] = 'Remove cache files that are older than the specified number of minutes';
 #F
 $lang['friendlyname'] = 'AWSS3 Module';
 $lang['file'] = 'File';
@@ -43,6 +44,7 @@ $lang['help_access_key'] = <<<EOT
 </ul>
 EOT;
 
+$lang['help_opt_expiry_interval'] = 'Specify the amount of time (in minutes) that browsers should cache queries for. Setting this value to 0 disables the functionality. In most circumstances you should specify a value greater than 30';
 $lang['help_bucket_name'] = 'This module will not create any S3 buckets. You have to create the bucket with public read access.';
 $lang['help_use_custom_url'] = 'Enable this if you want to use custom URL';
 $lang['help_custom_url'] = 'Custom URL can be a Cloudfront URL or if any url mapped on your bucket.';
@@ -91,6 +93,8 @@ $lang['type_AWSS3'] = 'AWSS3';
 $lang['type_detail'] = 'Detail';
 $lang['type_summary'] = 'Summary';
 $lang['type_Reviews'] = 'Reviews';
+$lang['title_changedir'] = 'Change working directory to this directory';
+$lang['title_changeupdir'] = 'Go to the parent folder';
 #V
 $lang['VALIDATION_ERROR'] = 'Please provide your Log File path';
 #W

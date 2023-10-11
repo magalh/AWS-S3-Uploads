@@ -3,6 +3,7 @@ namespace AWSS3;
 
 use AWSS3\utils;
 use AWSS3\helpers;
+use AWSS3\encrypt;
 
 final class bucket_query
 {
@@ -12,8 +13,7 @@ final class bucket_query
         'Bucket'=>null, 
         'Delimiter'=>null, 
         'MaxKeys'=>1000, 
-        'StartAfter'=>0,    
-        'ContinuationToken'=>null
+        'StartAfter'=>0
     ];
 
     public function __construct($params = array())
@@ -61,26 +61,39 @@ final class bucket_query
 
         try {
             
-            $results = $this->s3Client->listObjectsV2($this->_data);
+            $resultPaginator = $this->s3Client->getPaginator('ListObjectsV2', $this->_data);
+            $listing = $this->_data;
+            $listing['date'] = time();
+            $i = 1;
+            $items = 0;
+            foreach ($resultPaginator as $result) {
+                //print_r($result);
+                $listing['pages'][$i]['itemcount'] = $result['KeyCount'];
+                $listing['pages'][$i]['items'] = $this->FetchAll($result);
+                
+                $i++;
+                $items++;
+            }
+
+            foreach($listing['pages'] as $page){
+                $listing['total'] += $page['itemcount'];
+            }
+            //$listing['total'] = 100;
+            //print_r($listing);
+
+            //$results = $this->s3Client->listObjectsV2($this->_data);
             //print_r($results);
             //$listing = $results->get('Contents');
-            $listing['data'] = $this->FetchAll($results);
+/*            $listing['data'] = $this->FetchAll($results);
             $listing['itemcount'] = $results['KeyCount'];
             $listing['NextContinuationToken'] = $results['NextContinuationToken'];
             $listing['ContinuationToken'] = $results['ContinuationToken'];
-            $listing['total'] = $this->objectCount();
+            $listing['total'] = $this->objectCount();*/
             //print_r($listing);
 
-            if($results['IsTruncated']){
-                $listing['data_truncated'] = true;  
-            }
             //$listing = helpers::sort_by_key($listing, 'name');
 
-/*          $resultPaginator = $this->s3Client->getPaginator('ListObjects', $this->_data);
-            $listing = [];
-            foreach ($resultPaginator as $result) {
-                $listing = array_merge($listing, $result->get('Contents') ?: [], $result->get('CommonPrefixes') ?: []);
-            }*/
+
 
         } catch (AwsException $e) {
             // Handle the error
@@ -107,6 +120,7 @@ final class bucket_query
     {
 
         $__mod = \cms_utils::get_module('AWSS3');
+        $themeObject = \cms_utils::get_theme_object();
         $entryarray = [];
 
         //Directories
@@ -118,7 +132,7 @@ final class bucket_query
             $onerow->dir = true;
             $onerow->mime = 'directory';
             $onerow->ext = '';
-
+            $onerow->icon = $__mod->GetFileIcon($onerow->ext,true);
             $entryarray[]= $onerow;
 
         }
@@ -162,6 +176,21 @@ final class bucket_query
         
         $objectCount = count($result['Contents']);
         return $objectCount;
+
+    }
+
+    public static function cache_query($qparms,$json_file_Path){
+
+        $query = new bucket_query($qparms);
+        $data = $query->execute();
+        $json = json_encode($data);
+        $tmp = encrypt::encrypt($json);
+        file_put_contents($json_file_Path, $tmp);
+
+        //$json = file_get_contents($json_file_Path);
+        //$tmp = encrypt::decrypt($json);
+        $data = json_decode($json, false);
+        return $data;
 
     }
 
