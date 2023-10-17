@@ -14,6 +14,8 @@ class AWSS3 extends CMSModule
 	public function GetAuthorEmail() { return 'h_magal@hotmail.com'; }
 	public function UninstallPreMessage() { return $this->Lang('ask_uninstall'); }
 	public function GetAdminSection() { return 'extentions'; }
+    public function MinimumCMSVersion() { return '2.2.1'; }
+    public function GetDependencies() { return ['AWSSDK' => '1.0.0']; }
 	
 	public function InitializeFrontend() {
 		$this->RegisterModulePlugin();
