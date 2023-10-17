@@ -4,65 +4,86 @@ namespace AWSS3;
 if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
-header('Content-type: application/json');
-use AWSS3\utils;
+use \AWSS3\utils;
+
+$template = \xt_param::get_string($params,'template',$this->GetPreference('default_uploadform'));
+$nocaptcha = \xt_param::get_bool($params,'nocaptcha');
+$message = null;
 $utils = new utils();
-$mod_fm = \cms_utils::get_module('FileManager');
-$error = 0;
 
-$data = array();
+$template = 'orig_uploadform_template.tpl';
+$tpl = $smarty->CreateTemplate($this->GetTemplateResource($template),null,null,$smarty);
 
-/*$json = file_get_contents(dirname(__FILE__).'/files.json');
-$json_data = json_decode($json,true);
-echo json_encode($json_data);
-exit();
-*/
-try {
+if( isset($params['input_submit']) ) {
+    try {
 
-    if(empty($_FILES)) {
-        throw new \Exception( $this->Lang('warn_file_missing') );
-    }
+        $prefix= $params['prefix']?$params['prefix']:'';
 
-    $files = array_filter($_FILES[$id.'files']['name']);
-
-    $total_count = count($_FILES[$id.'files']['name']);
-    // Loop through every file
-    for( $i=0 ; $i < $total_count ; $i++ ) {
-
-        $file_name = basename($_FILES[$id.'files']['name'][$i]); 
+        $uploadfile = $_FILES[$id.'input_browse'];
+        $file_name = basename($_FILES[$id.'input_browse']['name']); 
         $file_type = pathinfo($file_name, PATHINFO_EXTENSION); 
 
-        $return_params['name'] = $file_name;
-        $return_params['size'] = $_FILES[$id.'files']['size'][$i];
-        
-        // Allow certain file formats 
-        if( !$utils::is_file_acceptable( $file_type ) ) {
-            //throw new \Exception( $this->Lang('warn_file_not_allowed') );
-            $return_params['error'] = "Filetype not allowed";
-        } else {
-            //upload to S3
-            $file_temp_src = $_FILES[$id.'files']["tmp_name"][$i];
-            if(is_uploaded_file($file_temp_src)){
-                $s3 = $utils->upload_file($params["bucket_id"],$params["path"].$file_name,$file_temp_src);
-            }
+        if(empty($file_name)) {
+            //throw new \Exception( $this->Lang('warn_file_missing') );
         }
 
-        $data['files'][] = $return_params;
+        // Allow certain file formats 
+/*        if( !$utils::is_file_acceptable( $file_type ) ) {
+            throw new \Exception( $this->Lang('warn_file_not_allowed') );
+        } */
 
+        //check captcha
+        $captcha = $this->GetModuleInstance('Captcha');
+        if( is_object($captcha) && !$nocaptcha && isset($params['input_captcha']) ) {
+            if( !$captcha->checkCaptcha(\xt_param::get_string($params,'input_captcha')) ) throw new \Exception($this->lang('error_captchamismatch'));
+        }
+
+        $file_temp_src = $_FILES[$id.'input_browse']["tmp_name"];
+        if(is_uploaded_file($file_temp_src)){
+            $bucket_id = $this->GetOptionValue('bucket_name');
+            $ret = $utils->upload_file($bucket_id,$prefix.$file_name,$file_temp_src);
+        }
+    
+        if( $ret[0] == false ) throw new \Exception($ret[1]);
+        $good_upload = $ret[2];
+
+        // redirect outa here, or display a message
+        if( ($tmp = $params['redirect']) ) {
+            $destpage = $this->resolve_alias_or_id($tmp,$returnid);
+            $this->redirectcontent( $destpage );
+        }
+    }
+    catch( \Exception $e ) {
+        $errormessage = $e->getmessage();
     }
 
-}
-catch( \Exception $e ) {
-	$error = 1;	
-	$message = $e->getMessage();
-    $data['error'] = $message;
+    if(isset($errormessage)){
+        $type = "alert-danger";
+        $message = $errormessage;
+    } else {
+        $type = "alert-success";
+        $message = $this->Lang('successful_upload',$good_upload);
+    }
+
+    $this->_DisplayMessage($message,$type);
+
+    $tpl->assign('message',$message);
 
 }
 
+$parms = array('prefix'=>$params['prefix'],'nocaptcha'=>$nocaptcha,'redirect'=>$params['redirect']);
+// encrypt these params.
+//function CreateFormStart($id, $action='default', $returnid='', $method='post', $enctype='', $inline=false, $idsuffix='', $params = array(), $extra='')
+$tpl->assign('startform',$this->CreateFormStart($id, 'upload', $returnid,"post","multipart/form-data",false,'',$params));
+$tpl->assign('endform',$this->CreateFormEnd());
+if( !$nocaptcha ) {
+    $captcha = $this->GetModuleInstance('Captcha');
+    if( is_object($captcha) ) {
+        $tpl->assign('captcha_title', $this->Lang('captcha_title'));
+        $tpl->assign('captcha', $captcha->getCaptcha());
+    }
+}
 
-echo json_encode($data);
+$tpl->display();
 
-#
-# EOF
-#
 ?>

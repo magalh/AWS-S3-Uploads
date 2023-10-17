@@ -56,9 +56,7 @@ final class bucket_query
         }
     }
 
-    public function &execute()
-    {
-
+    public function &execute_by_pages(){
         try {
             
             $resultPaginator = $this->s3Client->getPaginator('ListObjectsV2', $this->_data);
@@ -78,37 +76,53 @@ final class bucket_query
             foreach($listing['pages'] as $page){
                 $listing['total'] += $page['itemcount'];
             }
-            //$listing['total'] = 100;
-            //print_r($listing);
-
-            //$results = $this->s3Client->listObjectsV2($this->_data);
-            //print_r($results);
-            //$listing = $results->get('Contents');
-/*            $listing['data'] = $this->FetchAll($results);
-            $listing['itemcount'] = $results['KeyCount'];
-            $listing['NextContinuationToken'] = $results['NextContinuationToken'];
-            $listing['ContinuationToken'] = $results['ContinuationToken'];
-            $listing['total'] = $this->objectCount();*/
-            //print_r($listing);
-
-            //$listing = helpers::sort_by_key($listing, 'name');
-
-
-
         } catch (AwsException $e) {
-            // Handle the error
             if($e->getStatusCode() == 404){
                 $error_message = $bucket_id." ".$e->getAwsErrorMessage();
             } else {
                 $error_message = $e->getMessage();
             }
-
             echo $error_message;
         }
 
         return $listing;
+    }
 
-        
+    public function &execute()
+    {
+
+        try {
+            
+            $resultPaginator = $this->s3Client->getPaginator('ListObjectsV2', $this->_data);
+            $listing = $this->_data;
+            $listing['date'] = time();
+            $listing['items'] = [];
+            $items = 0;
+            foreach ($resultPaginator as $result) {
+                $listing['items'] = array_merge($listing['items'], $this->FetchAll($result));
+                $items++;
+            }
+            utils::sortByProperty($listing['items'], 'name');
+
+            $indicesToMove = [];
+            for ($i = 0; $i < count($listing['items']); $i++) {
+                if($listing['items'][$i]->dir == true)$indicesToMove[] = $i;
+            }
+            if (count($indicesToMove) > 0) {
+            utils::moveItemsToBeginningByIndex($listing['items'], $indicesToMove);
+            }
+            $listing['total'] = count($listing['items']);  
+            
+        } catch (AwsException $e) {
+            if($e->getStatusCode() == 404){
+                $error_message = $bucket_id." ".$e->getAwsErrorMessage();
+            } else {
+                $error_message = $e->getMessage();
+            }
+            echo $error_message;
+        }
+
+        return $listing;        
     }
 
     /**
@@ -190,6 +204,9 @@ final class bucket_query
         //$json = file_get_contents($json_file_Path);
         //$tmp = encrypt::decrypt($json);
         $data = json_decode($json, false);
+
+        //print_r($data);
+
         return $data;
 
     }

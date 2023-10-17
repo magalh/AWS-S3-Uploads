@@ -41,7 +41,6 @@ use \AWSS3\utils;
 use \AWSS3\bucket_query;
 use \AWSS3\encrypt;
 
-
 $mod_fm = \cms_utils::get_module('FileManager');
 
     $bucket_id = $this->GetOptionValue('bucket_name');
@@ -80,21 +79,38 @@ $mod_fm = \cms_utils::get_module('FileManager');
     $pagenumber = 1;
     $prefix = $params['prefix']?$params['prefix']:'';
 
-    if( isset( $params['pagenumber'] ) && $params['pagenumber'] != '' ) {
-        // if given a page number, determine a start element
+    $explodedprefix=explode('/', $prefix); 
+    $path_parts = [];
+    for( $i = 0; $i < count($explodedprefix); $i++ ) {
+        $obj = new \StdClass;
+        if( !$explodedprefix[$i] ) continue;
+        $obj->name = $explodedprefix[$i];
+        $obj->prefix = implode('/',array_slice($explodedprefix,0,$i+1)).'/';
+        if( $i < count($explodedprefix) - 1 ) {
+            $params['prefix'] = $obj->prefix;
+            $obj->url = $this->CreateFrontendLink($id,$returnid,'default','',$params, '', true);
+        } else {
+            // the last entry... no link
+        }
+        $path_parts[] = $obj;
+    }
+
+
+    if( isset( $params['pagenumber'] ) && $params['pagenumber'] !== '' ) {
         $pagenumber = (int)$params['pagenumber'];
         $startelement = ($pagenumber-1) * $pagelimit;
     }
+    $endelement = $startelement + $pagelimit - 1;
 
-    if( isset( $params['newdir'] ) && $params['newdir'] != '' ) {
-        $newdir = $params['newdir'];
-        $updir = dirname($newdir,2)=='.' ? '' : dirname($newdir,2);
+    if( $path_parts[1] ) {
+        $counter = count($path_parts);
+        $updir = $path_parts[$counter-2]->prefix;
         $icon = $mod_fm->GetModuleURLPath().'/icons/themes/default/actions/dir_up.gif';
         $img_tag = '<img src="'.$icon.'" width="32" title="'.$this->Lang('title_changeupdir').'"/>';
-        $diriconlink = $this->CreateFrontendLink($id,$returnid, 'default', $img_tag, array('newdir'=>$updir));
+        $params['prefix'] = $updir;
+        $diriconlink = $this->CreateFrontendLink($id,$returnid, 'default', $img_tag, $params);
         $dirlink = "<a class=\"dirlink\" href=\"{$url}\" title=\"{$this->Lang('title_changeupdir')}\">..</a>";
 
-        $tpl_ob->assign('newdir',$newdir);
         $tpl_ob->assign('updir',$updir);
         $tpl_ob->assign('dirlink',$dirlink);
         $tpl_ob->assign('diriconlink',$diriconlink);
@@ -104,7 +120,9 @@ $mod_fm = \cms_utils::get_module('FileManager');
     $qparms['Bucket'] = $bucket_id;
     $qparms['Prefix'] = $prefix;
     $qparms['Delimiter'] = '/';
-    $qparms['MaxKeys'] = $pagelimit;
+    //$qparms['MaxKeys'] = $pagelimit;
+
+    $tpl_ob->assign('qparms',$qparms);
 
     $json_file_Path = $this->getCacheFile($bucket_id,$prefix);
 
@@ -162,33 +180,48 @@ $mod_fm = \cms_utils::get_module('FileManager');
     $tpl_ob->assign('bucket',$bucket_id);
     $tpl_ob->assign('cachefile',$json_file_Path);
     $tpl_ob->assign('lastupdate', $data->date);
+    $tpl_ob->assign('count', $count);
     $tpl_ob->assign('pagenumber',$pagenumber);
+    $tpl_ob->assign('startelement',$startelement);
+
+    if($endelement >= $count)$endelement=$count-1;
+
+    $tpl_ob->assign('endelement', $endelement);
     $tpl_ob->assign('pagecount',$pagecount);
     $tpl_ob->assign('oftext',$this->Lang('prompt_of'));
     $tpl_ob->assign('pagetext',$this->Lang('prompt_page'));
 
-    $tpl_ob->assign('itemcount', $data->itemcount);
-    $tpl_ob->assign('items', $data->pages->{$pagenumber}->items);
-    $tpl_ob->assign('count', $count);
+    
+    if ($startelement < 0 || $startelement > $endelement) {
+        echo "Invalid indexes.";
+    } else {
+        // Slice the array to extract elements between the indexes
+        $selectedItems = array_slice($data->items, $startelement, $endelement - $startelement + 1);
+
+        foreach( $selectedItems as $row ) {
+
+            $onerow = $row;
+            if($onerow->dir){
+                $sendtodetail = array('prefix'=>$onerow->key);
+                if( isset( $params['pagelimit'] ) ) {
+                    $sendtodetail = array_merge($sendtodetail,array('pagelimit'=>$pagelimit));
+                }
+                $onerow->link = $this->CreateLink($id, 'default', $returnid, '', $sendtodetail,'', true, false, '', true,$prettyurl);
+                $onerow->icon_link = "<a href='" . $onerow->link . "' class=\"card-link\">".$onerow->icon."</a>";
+            }
+
+
+            $entryarray[]= $onerow;
+        }
+
+        //print_r($selectedItems);
+    }
+
+    $tpl_ob->assign('items', $entryarray);
+    
     $tpl_ob->assign('startdate', $data->date);
     $tpl_ob->assign('enddate', $enddate);
     $tpl_ob->assign('cachetime', $nminutes);
-
-    $explodedprefix=explode('/', $prefix); 
-    $path_parts = [];
-    for( $i = 0; $i < count($explodedprefix); $i++ ) {
-        $obj = new \StdClass;
-        if( !$explodedprefix[$i] ) continue;
-        $obj->name = $explodedprefix[$i];
-        if( $i < count($explodedprefix) - 1 ) {
-            // not the last entry
-            $fullpath = implode('/',array_slice($explodedprefix,0,$i+1));
-            $obj->url = $this->CreateFrontendLink($id,$returnid,'default','',array('prefix'=>$fullpath.'/'), '', true);
-        } else {
-            // the last entry... no link
-        }
-        $path_parts[] = $obj;
-    }
 
     $smarty->assign('path_parts',$path_parts);
 

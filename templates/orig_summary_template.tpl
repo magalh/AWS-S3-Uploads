@@ -8,7 +8,7 @@
          
   <nav aria-label="breadcrumb">
   <ol class="breadcrumb">
-  <li class="breadcrumb-item active" aria-current="page"><a href="{cms_action_url}">Home</a></li>
+  <li class="breadcrumb-item active" aria-current="page">Home</li>
   {foreach $path_parts as $part}
     <li class="breadcrumb-item">
     {if !empty($part->url)}
@@ -23,12 +23,12 @@
 
 <div class="card">
 <ul class="list-group list-group-flush">
-{if $prefix && $prefix != ''}
+{if $path_parts[1]}
   <li class="list-group-item">{$diriconlink}</li>
 {/if}
 {foreach from=$items item=entry}
   {if $entry->dir}
-    <li class="list-group-item"><a href="{cms_action_url newdir=$entry->key}" class="card-link">{$entry->icon} {$entry->name}</a></li>
+    <li class="list-group-item"><a href="{$entry->link}" class="card-link">{$entry->icon} {$entry->name}</a></li>
   {else}
     <li class="list-group-item">{$entry->presigned_icon_link} {$entry->presigned_link}</li>
   {/if}

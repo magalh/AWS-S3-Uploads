@@ -20,8 +20,10 @@ class AWSS3 extends CMSModule
         $this->RestrictUnknownParams();
 
         $this->RegisterRoute('/[Aa]wss3\/[Ss]\/(?P<key>.*?)$/', array('action'=>'signed'));
+        $this->RegisterRoute('/[Aa]wss3\/[Pp]age]\/(?P<pagenumber>.*?)$/', array('action'=>'default'));
 
         $this->SetParameterType('id',CLEAN_STRING);
+        $this->SetParameterType('prefix',CLEAN_STRING);
         $this->SetParameterType('key',CLEAN_STRING);
         $this->SetParameterType('key2',CLEAN_STRING);
         $this->SetParameterType('key3',CLEAN_STRING);
@@ -35,6 +37,7 @@ class AWSS3 extends CMSModule
         $this->SetParameterType('showall',CLEAN_INT);
         $this->SetParameterType('detailpage',CLEAN_STRING);
         $this->SetParameterType('detailtemplate',CLEAN_STRING);
+
 	}
 
 	 public function InitializeAdmin() {
@@ -236,20 +239,20 @@ class AWSS3 extends CMSModule
         if( file_exists($fn) ) return @file_get_contents($fn);
     }
 
-    public function CreatePrettyLink($name)
-    {
-        $base_url = CMS_ROOT_URL;
-        $out = $base_url."/awss3/detail/".$name;
-
- 
-        return $out;
-    }
-
     public function CreateSignedLink($name)
     {
         $base_url = CMS_ROOT_URL;
         $name = $this->encodefilename($name);
         $out = $base_url."/awss3/s/".$name;
+
+        return $out;
+    }
+
+    public function CreatePrettyLink($page,$prefix)
+    {
+        $base_url = CMS_ROOT_URL;
+        //$name = $this->encodefilename($name);
+        $out = $base_url."/awss3/".$page."/".$prefix;
 
         return $out;
     }
@@ -271,6 +274,8 @@ class AWSS3 extends CMSModule
         list($sig,$filename) = explode('|',base64_decode($encodedfilename),2);
         if( sha1($this->config['dbpassword'].__FILE__.$filename) == $sig ) return $filename;
     }
+
+    
     
 
 }

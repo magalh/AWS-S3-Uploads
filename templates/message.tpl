@@ -1,6 +1,1 @@
-<div class="{$errorclass}">
-<div class="adminmessage">
-    {if $message}
-    <p>{$message}</p>
-    {/if}
-</div></div>
+{if $message}<div class="{$errorclass}"><div class="adminmessage"><small>{$message}</small></div></div>{/if}

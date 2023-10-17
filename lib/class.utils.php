@@ -3,10 +3,10 @@ namespace AWSS3;
 
 require dirname(__DIR__, 1).'/SDK/aws-autoloader.php';
 
-use Aws\S3\S3Client;  
-use Aws\Exception\AwsException;
-use Aws\Credentials\Credentials;
-use AWSS3\helpers;
+use \Aws\S3\S3Client;  
+use \Aws\Exception\AwsException;
+use \Aws\Credentials\Credentials;
+use \AWSS3\helpers;
 
 final class utils
 {
@@ -15,6 +15,7 @@ final class utils
     private static $__mod;
 
     public function __construct (){
+
         $this->mod = self::get_mod();
         $this->s3Client = null;
         $this->bucket_name = $this->mod->GetPreference('bucket_name');
@@ -25,6 +26,7 @@ final class utils
         $this->custom_url = $this->mod->GetPreference('custom_url');
         $this->allowed = $this->mod->GetPreference('allowed');
         $this->errors = array();
+
     }
 
     private static function lang()
@@ -111,25 +113,29 @@ final class utils
     }
 
     public function upload_file($bucket_id,$file_name,$file_temp_src){
+
+        $this->s3Client = $this::getS3Client();
+        $ret = array();
         try { 
             $result = $this->s3Client->putObject([ 
                 'Bucket' => $bucket_id, 
                 'Key'    => $file_name,
                 'SourceFile' => $file_temp_src,
-                'Tagging' => "Module=CMSMS::AWSS3",
-                'ACL'    => 'public-read'
+                'Tagging' => "Module=CMSMS::AWSS3"
             ]); 
-            $result_arr = $result->toArray(); 
+            //$result_arr = $result->toArray(); 
 
-            print_r($result);
+            $ret[0] = true;
+            $ret[2] = $file_name;  
 
         } catch (AwsException $e) { 
-            $smarty = cmsms()->GetSmarty();
-            $smarty->assign('error',1);
-            $smarty->assign('message',$e->getAwsErrorMessage());
-            echo $e->getCode() . " " .$e->getMessage();
-            exit();
+            $ret[0] = false;
+            $ret[1] = $e->getAwsErrorMessage();
+            //echo $e->getCode() . " " .$e->getMessage();
         } 
+
+        print_r($ret);
+        return $ret;
     }
 
     public function list_my_buckets(){
@@ -444,7 +450,7 @@ final class utils
   {
       $mod = self::get_mod();
       $file_type = strtolower($file_type);
-      $allowTypes = array($mod->GetPreference('allowed')); 
+      $allowTypes = explode(',',$mod->GetPreference('allowed'));
       if(!in_array($file_type, $allowTypes)) return FALSE;
       return TRUE;
   }
@@ -560,6 +566,34 @@ final class utils
         
 	}
 
+    public static function sort_by_key($array, $key) {
+        usort($array, function($a, $b) use ($key) {
+            return $a[$key] - $b[$key];
+        });
+        return $array;
+    }
+
+    public static function sortByProperty($array, $property) {
+        usort($array, function($a, $b) use ($property) {
+            return strcmp($a->$property, $b->$property);
+        });
+        return $array;
+    }
+
+    public static function moveItemsToBeginningByIndex(&$array, $indicesToMove) {
+        $itemsToMove = array();
+    
+        // Extract the items to move based on the provided indices
+        foreach ($indicesToMove as $index) {
+            if (isset($array[$index])) {
+                $itemsToMove[] = $array[$index];
+                unset($array[$index]);
+            }
+        }
+    
+        // Merge the items to the beginning of the array
+        $array = array_merge($itemsToMove, $array);
+    }
   
 
 

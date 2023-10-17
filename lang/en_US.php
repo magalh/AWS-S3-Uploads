@@ -6,6 +6,7 @@ $lang['admin_save'] = "Save";
 $lang['access_key'] = 'Access keys';
 $lang['allowed'] = 'Allowed';
 $lang['author_label'] = 'Posted by:';
+$lang['choose_file'] = 'Choose file';
 
 #B
 $lang['bucket_name'] = 'Bucket Name';
@@ -95,10 +96,15 @@ $lang['type_summary'] = 'Summary';
 $lang['type_Reviews'] = 'Reviews';
 $lang['title_changedir'] = 'Change working directory to this directory';
 $lang['title_changeupdir'] = 'Go to the parent folder';
+#U
+$lang['upload'] = 'Upload';
 #V
 $lang['VALIDATION_ERROR'] = 'Please provide your Log File path';
 #W
 $lang['warn_delete_directory'] = 'A folder is selected for deletion, all objects in the folder will be deleted, and any new objects added while the delete action is in progress might also be deleted. If an object is selected for deletion, any new objects with the same name that are uploaded before the delete action is completed will also be deleted.';
 $lang['warn_file_not_allowed'] = 'Filetype not allowed';
 $lang['warn_file_missing'] = 'Select a file to upload';
+$lang['successful_upload'] = 'Your file was successfully uploaded.  In the end, the filename we used was %s';
+$lang['captcha_title'] = 'Enter the text displayed in this image';
+$lang['error_captchamismatch'] = 'Captch text entered did not match the image displayed';
 ?>
