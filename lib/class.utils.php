@@ -1,7 +1,7 @@
 <?php
 namespace AWSS3;
 
-require dirname(__DIR__, 1).'/SDK/aws-autoloader.php';
+require dirname(__DIR__,2).'/AWSSDK/SDK/aws-autoloader.php';
 
 use \Aws\S3\S3Client;  
 use \Aws\Exception\AwsException;
@@ -13,15 +13,15 @@ final class utils
 
     private $s3Client = null;
     private static $__mod;
+    private static $__sdk;
 
     public function __construct (){
 
+        $this->awssdk = self::get_sdk();
         $this->mod = self::get_mod();
         $this->s3Client = null;
         $this->bucket_name = $this->mod->GetPreference('bucket_name');
         $this->access_region = $this->mod->GetPreference('access_region');
-        $this->access_secret_key = $this->mod->GetPreference('access_secret_key');
-        $this->access_key = $this->mod->GetPreference('access_key');
         $this->use_custom_url = $this->mod->GetPreference('use_custom_url');
         $this->custom_url = $this->mod->GetPreference('custom_url');
         $this->allowed = $this->mod->GetPreference('allowed');
@@ -31,8 +31,7 @@ final class utils
 
     private static function lang()
     {
-        if( !self::$__mod ) self::$__mod = \cms_utils::get_module('AWSS3');
-
+        if( !self::$__mod ) self::$__mod = self::get_mod();
         $args = func_get_args();
         return call_user_func_array(array(self::$__mod,'Lang'),$args);
     }
@@ -41,10 +40,11 @@ final class utils
 
         $smarty = cmsms()->GetSmarty();
         $settings = $this->mod->GetSettingsValues();
+        print_r($settings);
         if(empty($settings)) return false;
 
         try {
-            $data = array('access_key','access_secret_key','bucket_name','access_region');
+            $data = array('bucket_name','access_region');
 
             foreach ($data as $key)
             {
@@ -78,11 +78,11 @@ final class utils
 
         }
         catch (\AWSS3\Exception $e) {
-            $this->mod->_DisplayMessage($e->getText(),$e->getType());
+            $this->awssdk->_DisplayMessage($e->getText(),$e->getType());
             return false;
         }
 
-        $message = $this->mod->_DisplayMessage($this->lang('msg_vrfy_integrityverified'),"success",1);
+        $message = $this->awssdk->_DisplayMessage($this->lang('msg_vrfy_integrityverified'),"success",1);
         $smarty->assign("message",$message);
         return true;
 	}
@@ -239,9 +239,13 @@ final class utils
     }
     
     public static function get_mod(){
-        static $_mod;
-        if( !$_mod ) $_mod = \cms_utils::get_module('AWSS3');
-        return $_mod;
+        if( !self::$__mod ) self::$__mod = \cms_utils::get_module('AWSS3');
+        return self::$__mod;
+    }
+
+    public static function get_sdk(){
+        if( !self::$__sdk ) self::$__sdk = \cms_utils::get_module('AWSSDK');
+        return self::$__sdk;
     }
 
     private static function get_credentials(){

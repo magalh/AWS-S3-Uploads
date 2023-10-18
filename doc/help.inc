@@ -1,6 +1,8 @@
 <h3>What is this?</h3>
 <h3>How do I use it?</h3>
 <h3>Support</h3>
+<h3>Interested in development?</h3>
+<p><a href="https://plugins.trac.wordpress.org/browser/wp-s3/">Browse the code</a>, check out the <a href="https://plugins.svn.wordpress.org/wp-s3/">SVN repository</a>, or subscribe to the <a href="https://plugins.trac.wordpress.org/log/wp-s3/">development log</a> by <a href="https://plugins.trac.wordpress.org/log/wp-s3/?limit=100&amp;mode=stop_on_copy&amp;format=rss">RSS</a>.</p>
 <h3>Copyright and License</h3>
 <p>Copyright &copy; 2023, Magal Hezi <a href="mailto:h_magal@hotmail.com">&lt;h_magal@hotmail.com&gt;</a>. All Rights Are Reserved.</p>
 <p>This program is free software; you can redistribute it and/or modify

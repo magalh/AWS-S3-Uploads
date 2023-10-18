@@ -3,7 +3,7 @@ class AWSS3 extends CMSModule
 {
 	const MANAGE_PERM = 'manage_AWSS3';	
 	
-	public function GetVersion() { return '1.0'; }
+	public function GetVersion() { return '1.0.0'; }
 	public function GetFriendlyName() { return $this->Lang('friendlyname'); }
 	public function GetAdminDescription() { return $this->Lang('admindescription'); }
 	public function IsPluginModule() { return TRUE; }
@@ -46,7 +46,7 @@ class AWSS3 extends CMSModule
 		 $this->SetParameters();
 	 }
 	
-	public function GetHelp() { return @file_get_contents(__DIR__.'/doc/help.inc'); }
+	public function GetHelp() { return @file_get_contents(__DIR__.'/README.md'); }
 	public function GetChangeLog() { return @file_get_contents(__DIR__.'/doc/changelog.inc'); }
 
 	protected function _output_header_javascript()
@@ -74,15 +74,6 @@ class AWSS3 extends CMSModule
         return $out;
     }
 
-	public function is_developer_mode() {
-		$config = \cms_config::get_instance();
-		if( isset($config['developer_mode']) && $config['developer_mode'] ) {
-			return true;
-		} else {
-			return false;
-		}
-	}
-
 	public function GetFileIcon($extension,$isdir=false) {
         if (empty($extension)) $extension = '---'; // hardcode extension to something.
         if ($extension[0] == ".") $extension = substr($extension,1);
@@ -109,94 +100,6 @@ class AWSS3 extends CMSModule
         }
         return $result;
     }
-
-    final public function GetSettingsValues()
-    {
-        $prefix = $this->GetName().'_mapi_pref_';
-        $list = cms_siteprefs::list_by_prefix($prefix);
-        if( !$list || !count($list) ) return [];
-        $out = [];
-        foreach( $list as $prefname ) {
-            $tmp = cms_siteprefs::get($prefname);
-            if( !$tmp ) continue;
-            $out[substr($prefname, strlen($prefix))] = $tmp;
-        }
-
-        if( count($out) ) return $out;
-
-    }
-    
-    final public function GetOptionValue($key, $default = '')
-    {
-        $value = $this->GetPreference($key);
-        if(isset($value) && $value !== '') {
-            return $value;
-        } else {
-            return $default;
-        }
-        
-    }
-    
-    final public function SetOptionValue($key, $value) : void
-    {
-      $this->SetPreference($key,$value);
-    }
-
-    public function getHelpers()
-	{
-	  return \AWSS3\Helpers::getInstance();
-	}
-
-    public function _DisplayErrorMessage($errors, string $class = 'alert alert-danger')
-	{
-	  $smarty = cmsms()->GetSmarty();
-	  $tpl = $smarty->CreateTemplate($this->GetTemplateResource('error.tpl'),null,null,$smarty);
-	  $tpl->assign('errorclass', $class);
-	  $tpl->assign('errors', $errors);
-	  $tpl->display();
-	}
-
-    public function _DisplayMessage($message,$type="alert-danger",$fetch=null)
-	{
-      //helpers::_DisplayAdminMessage($error,$class);
-      $mod = \cms_utils::get_module("AWSS3");
-	  $smarty = cmsms()->GetSmarty();
-	  $tpl = $smarty->CreateTemplate($mod->GetTemplateResource('message.tpl'),null,null,$smarty);
-
-      switch ($type) {
-            case ($type == "alert-info" || $type == "info"):
-                $class = "alert alert-info";
-                break;
-            case ($type == "alert-success" || $type == "success" || $type == 200):
-                $class = "alert alert-success";
-                break;
-            case ($type == "alert-warning" || $type == "warning"):
-                $class = "alert alert-warning";
-                break;
-            case ($type == "alert-danger" || $type == "error" || $type == 500):
-                $class = "alert alert-danger";
-                audit('', 'AWSS3 Error', substr( $message,0 ,200 ) );
-                break;
-            case "slide-danger":
-                $class = "message pageerrorcontainer";
-                audit('', 'AWSS3 Error', substr( $message,0 ,200 ) );
-                break;
-            case "slide-success":
-                $class = "message pagemcontainer";
-                break;
-        }
-
-        $tpl->assign('errorclass', $class);
-        $tpl->assign('message', $message);
-	  
-        if(isset($fetch)){
-            $out = $tpl->fetch();
-            return $out;
-        } else {
-            $tpl->display();
-        }
-      
-	}
 
 
     public static function page_type_lang_callback($str)
@@ -231,10 +134,6 @@ class AWSS3 extends CMSModule
 
         case 'form':
             $fn = 'orig_form_template.tpl';
-            break;
-
-        case 'browsecat':
-            $fn = 'browsecat.tpl';
         }
 
         $fn = cms_join_path(__DIR__,'templates',$fn);
@@ -253,7 +152,6 @@ class AWSS3 extends CMSModule
     public function CreatePrettyLink($page,$prefix)
     {
         $base_url = CMS_ROOT_URL;
-        //$name = $this->encodefilename($name);
         $out = $base_url."/awss3/".$page."/".$prefix;
 
         return $out;
@@ -268,17 +166,37 @@ class AWSS3 extends CMSModule
         return $json_file_Path;
     }
 
-    protected function encodefilename($filename) {
-        return base64_encode(sha1($this->config['dbpassword'].__FILE__.$filename).'|'.$filename);
+    final public function GetOptionValue($key, $default = '')
+    {
+        $value = $this->GetPreference($key);
+        if(isset($value) && $value !== '') {
+            return $value;
+        } else {
+            return $default;
+        }
+        
+    }
+    
+    final public function SetOptionValue($key, $value) : void
+    {
+      $this->SetPreference($key,$value);
     }
 
-    protected function decodefilename($encodedfilename) {
-        list($sig,$filename) = explode('|',base64_decode($encodedfilename),2);
-        if( sha1($this->config['dbpassword'].__FILE__.$filename) == $sig ) return $filename;
-    }
+    final public function GetSettingsValues()
+    {
+        $prefix = $this->GetName().'_mapi_pref_';
+        $list = cms_siteprefs::list_by_prefix($prefix);
+        if( !$list || !count($list) ) return [];
+        $out = [];
+        foreach( $list as $prefname ) {
+            $tmp = cms_siteprefs::get($prefname);
+            if( !$tmp ) continue;
+            $out[substr($prefname, strlen($prefix))] = $tmp;
+        }
 
-    
-    
+        if( count($out) ) return $out;
+
+    }
 
 }
 
