@@ -49,9 +49,9 @@ try {
 	}
 
 	$bucket_id = $this->GetOptionValue("bucket_id");
-	$onerow->url_presigned = utils::presignedUrl($bucket_id,$params['key']);
+	$onerow->url_presigned = aws_s3_utils::presignedUrl($bucket_id,$params['key']);
 
-	$s3Client = \AWSS3\utils::getS3Client();
+	$s3Client = \AWSS3\aws_s3_utils::getS3Client();
 
 	$bucket = $this->GetOptionValue("bucket_name");
 	$file = $s3Client->getObjectUrl($bucket,$params['key']);

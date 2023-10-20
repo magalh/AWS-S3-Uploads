@@ -4,15 +4,17 @@ namespace AWSS3;
 if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
-use \AWSS3\utils;
+use \AWSS3\aws_s3_utils;
+$__sdk = \cms_utils::get_module('AWSSDK');
 
 $template = \xt_param::get_string($params,'template',$this->GetPreference('default_uploadform'));
 $nocaptcha = \xt_param::get_bool($params,'nocaptcha');
 $message = null;
-$utils = new utils();
+$utils = new aws_s3_utils();
 
 $template = 'orig_uploadform_template.tpl';
 $tpl = $smarty->CreateTemplate($this->GetTemplateResource($template),null,null,$smarty);
+
 
 if( isset($params['input_submit']) ) {
     try {
@@ -24,13 +26,13 @@ if( isset($params['input_submit']) ) {
         $file_type = pathinfo($file_name, PATHINFO_EXTENSION); 
 
         if(empty($file_name)) {
-            //throw new \Exception( $this->Lang('warn_file_missing') );
+            throw new \Exception( $this->Lang('warn_file_missing') );
         }
 
         // Allow certain file formats 
-/*        if( !$utils::is_file_acceptable( $file_type ) ) {
+        if( !$utils::is_file_acceptable( $file_type ) ) {
             throw new \Exception( $this->Lang('warn_file_not_allowed') );
-        } */
+        } 
 
         //check captcha
         $captcha = $this->GetModuleInstance('Captcha');
@@ -46,10 +48,9 @@ if( isset($params['input_submit']) ) {
     
         if( $ret[0] == false ) throw new \Exception($ret[1]);
         $good_upload = $ret[2];
-
         // redirect outa here, or display a message
         if( ($tmp = $params['redirect']) ) {
-            $destpage = $this->resolve_alias_or_id($tmp,$returnid);
+            $destpage = $__sdk->resolve_alias_or_id($tmp,$returnid);
             $this->redirectcontent( $destpage );
         }
     }
@@ -65,7 +66,7 @@ if( isset($params['input_submit']) ) {
         $message = $this->Lang('successful_upload',$good_upload);
     }
 
-    $this->_DisplayMessage($message,$type);
+    $message = $__sdk->_DisplayMessage($message,$type,1);
 
     $tpl->assign('message',$message);
 

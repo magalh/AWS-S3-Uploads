@@ -16,6 +16,31 @@ class AWSS3 extends CMSModule
 	public function GetAdminSection() { return 'extentions'; }
     public function MinimumCMSVersion() { return '2.2.1'; }
     public function GetDependencies() { return ['AWSSDK' => '1.0.0']; }
+
+    public function __construct()
+  {
+    \spl_autoload_register([$this, 'autoload']);
+    //$foo = \ModuleOperations::get_instance()->get_module_instance(\MOD_AWSS3, NULL, TRUE);
+    parent::__construct();
+        
+    $class = \get_class($this);
+  
+    if(!\defined('MOD_' . \strtoupper($class) ) )
+    {
+      /**
+       * @ignore
+       */
+      \define('MOD_' . \strtoupper($class), $class);
+    }
+  }
+
+  public function autoload($classname) : bool
+  {
+      $sdk_mod = cms_utils::get_module( 'AWSSDK' );
+      $path = $sdk_mod->GetModulePath() . '/lib';
+      require_once $path.'/SDK/aws-autoloader.php';
+      return TRUE;
+  }
 	
 	public function InitializeFrontend() {
 		$this->RegisterModulePlugin();
@@ -142,8 +167,9 @@ class AWSS3 extends CMSModule
 
     public function CreateSignedLink($name)
     {
+        $mod_fm = \cms_utils::get_module('FileManager');
         $base_url = CMS_ROOT_URL;
-        $name = $this->encodefilename($name);
+        $name = $mod_fm->encodefilename($name);
         $out = $base_url."/awss3/s/".$name;
 
         return $out;
@@ -159,8 +185,9 @@ class AWSS3 extends CMSModule
 
     public function getCacheFile($bucket_id,$prefix)
     {
+        $mod_fm = \cms_utils::get_module('FileManager');
         $config = \cms_config::get_instance();
-        $json_file_name = 'awss3_'.$this->encodefilename($bucket_id.'_'.str_replace('/', '_', $prefix)).'.cms';
+        $json_file_name = 'awss3_'.$mod_fm->encodefilename($bucket_id.'_'.str_replace('/', '_', $prefix)).'.cms';
         $json_file_Path = $config['tmp_cache_location'].'/'.$json_file_name;
 
         return $json_file_Path;

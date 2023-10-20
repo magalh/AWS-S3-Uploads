@@ -37,7 +37,7 @@
 #END_LICENSE
 if( !defined('CMS_VERSION') ) exit;
 
-use \AWSS3\utils;
+use \AWSS3\aws_s3_utils;
 use \AWSS3\bucket_query;
 use \AWSS3\encrypt;
 

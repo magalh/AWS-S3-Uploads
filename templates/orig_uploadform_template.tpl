@@ -6,7 +6,6 @@
   <div class="custom-file">
     <input type="file" class="custom-file-input" id="{$actionid}customFile" name="{$actionid}input_browse">
     <label class="custom-file-label" for="{$actionid}customFile">{$mod->Lang('choose_file')}</label>
-    <small id="emailHelp" class="form-text text-muted">We'll never share your email with anyone else.</small>
   </div>
 </div>
 {* captcha ?? *}

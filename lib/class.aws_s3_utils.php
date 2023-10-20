@@ -1,14 +1,12 @@
 <?php
 namespace AWSS3;
 
-require dirname(__DIR__,2).'/AWSSDK/SDK/aws-autoloader.php';
-
 use \Aws\S3\S3Client;  
 use \Aws\Exception\AwsException;
-use \Aws\Credentials\Credentials;
+use \Aws\Exception\UnresolvedEndpointException;
 use \AWSS3\helpers;
 
-final class utils
+final class aws_s3_utils
 {
 
     private $s3Client = null;
@@ -40,7 +38,7 @@ final class utils
 
         $smarty = cmsms()->GetSmarty();
         $settings = $this->mod->GetSettingsValues();
-        print_r($settings);
+        //print_r($settings);
         if(empty($settings)) return false;
 
         try {
@@ -56,7 +54,7 @@ final class utils
             }
             
             if(!empty($this->errors)){
-                throw new \AWSS3\Exception($this->errors,"slide-danger");
+                throw new \AWSSDK\Exception($this->errors,"slide-danger");
             }
 
             $s3 = self::getS3Client();
@@ -102,10 +100,10 @@ final class utils
                 ]);
 
             $buckets = $s3Client->listBuckets();
+            
         } catch (AwsException $e) {
             $result['conn'] = false;
             $result['message'] = $e->getAwsErrorMessage();
-            print_r($result);
             return $result;
         }
 
@@ -134,7 +132,6 @@ final class utils
             //echo $e->getCode() . " " .$e->getMessage();
         } 
 
-        print_r($ret);
         return $ret;
     }
 
@@ -249,22 +246,40 @@ final class utils
     }
 
     private static function get_credentials(){
-        $mod = self::get_mod();
-        $credentials = new Credentials($mod->GetPreference('access_key'),$mod->GetPreference('access_secret_key'));
+        $credentials = self::get_sdk()->getCredentials();
         return $credentials;
     }
 
     public static function presignedUrl($bucket_id,$key){
 
-        $s3Client = self::getS3Client();
-        $cmd = $s3Client->getCommand('GetObject', [
-            'Bucket' => $bucket_id,
-            'Key' => $key
-        ]);
+        $me = self::getInstance();
+        set_error_handler(array($me, 'catchWarning'));
 
-        $request = $s3Client->createPresignedRequest($cmd, '+20 minutes');
-        $presignedUrl = (string)$request->getUri();
-        return $presignedUrl;
+        try {
+            $s3Client = self::getS3Client();
+            $cmd = $s3Client->getCommand('GetObject', [
+                'Bucket' => $bucket_id,
+                'Key' => $key
+            ]);
+
+            $request = $s3Client->createPresignedRequest($cmd, '+20 minutes');
+            $presignedUrl = (string)$request->getUri();
+
+            return $presignedUrl;
+
+        } catch (\AwsException $e) {
+            // Handle the error
+            $me->setError(array(
+                'error' => "Failed to connect to AWS server",
+                'errno' => $e->getAwsErrorCode(),
+                'errstr' => $e->getAwsErrorMessage()
+            ));
+
+        }
+
+        restore_error_handler();
+
+       
     }
 
     public static function formatBytes($bytes) {
@@ -512,13 +527,23 @@ final class utils
             $resp = $s3Client->getBucketAcl([
                 'Bucket' => $bucket
             ]);
-            print_r($resp);
+            //print_r($resp);
         } catch (AwsException $e) {
             // output error message if fails
             echo $e->getMessage();
             echo "\n";
         }
 
+    }
+
+    public static function getInstance()
+    {
+        static $instance = null;
+        if (!$instance) {
+            $instance = new self();
+        }
+
+        return $instance;
     }
     
 
@@ -600,6 +625,28 @@ final class utils
     }
   
 
+    protected function catchWarning($errno, $errstr, $errfile, $errline)
+    {
+        $this->setError(array(
+            'error' => "Connecting to the AWS server raised a PHP warning: ",
+            'errno' => $errno,
+            'errstr' => $errstr,
+            'errfile' => $errfile,
+            'errline' => $errline
+        ));
+    }
+
+    protected function setError($error,$debug=1)
+    {
+        $this->errors[] = $error;
+        if ($debug >= 1) {
+            echo '<pre>';
+            foreach ($this->errors as $error) {
+                print_r($error);
+            }
+            echo '</pre>';
+        }
+    }
 
 }
 ?>

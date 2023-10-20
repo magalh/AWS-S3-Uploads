@@ -2,17 +2,23 @@
 if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission(AWSS3::MANAGE_PERM) ) return;
 
-$utils = new \AWSS3\utils;
-$helpers = new \AWSS3\helpers;
+use \AWSSDK\aws_sdk_utils;
+use \AWSS3\aws_s3_utils;
+use \AWSS3\helpers;
+
+$sdk_utils = new aws_sdk_utils();
+$s3_utils = new aws_s3_utils();
 
 $ready = 0;
 $mod_fm = \cms_utils::get_module('FileManager');
 
-if($utils->validate()){
+if(!$sdk_utils->is_valid()){
+    $error = 1;
+    $link = $sdk_utils::get_mod()->create_url('m1_', 'defaultadmin', $returnid, array());
+    $message = $sdk_utils::get_mod()->_DisplayMessage($this->Lang('error_setup',$link),"alert-danger",true);
+} else if($s3_utils->validate()){
 	$ready = 1;
 	$bucket_id = $this->GetOptionValue('bucket_name');
-} else {
-	$ready = 0;
 }
 
 echo $this->StartTabHeaders();

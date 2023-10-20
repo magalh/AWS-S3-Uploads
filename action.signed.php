@@ -1,6 +1,8 @@
 <?php
 if( !defined('CMS_VERSION') ) exit;
-use AWSS3\utils;
+use AWSS3\aws_s3_utils;
+
+$mod_fm = \cms_utils::get_module('FileManager');
 
 try {
 	if( !isset($params['key']) ) {
@@ -8,15 +10,14 @@ try {
 	}
 
 	$bucket = $this->GetOptionValue("bucket_name");
-	$key = $this->decodefilename($params['key']);
-
-	$file = utils::presignedUrl($bucket,$key);
+	$key = $mod_fm->decodefilename($params['key']);
+	$file = aws_s3_utils::presignedUrl($bucket,$key);
 	//echo $file;
 	header("Location: ".$file);
 	die();
 	
 } catch (\AWSS3\Exception $e) {
-	$this->_DisplayAdminMessage($e->GetOptions(),$e->GetType());
+	//$this->_DisplayAdminMessage($e->GetOptions(),$e->GetType());
+	aws_s3_utils::get_sdk()->_DisplayMessage($e->getText());
 }
-
 ?>

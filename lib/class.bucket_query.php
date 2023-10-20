@@ -1,7 +1,7 @@
 <?php
 namespace AWSS3;
 
-use AWSS3\utils;
+use AWSS3\aws_s3_utils;
 use AWSS3\helpers;
 use AWSS3\encrypt;
 
@@ -18,7 +18,7 @@ final class bucket_query
 
     public function __construct($params = array())
     {
-        $this->s3Client = utils::getS3Client();
+        $this->s3Client = aws_s3_utils::getS3Client();
 
         foreach( $params as $key => $val ) {
             if( !array_key_exists($key,$this->_data) ) continue;
@@ -102,14 +102,14 @@ final class bucket_query
                 $listing['items'] = array_merge($listing['items'], $this->FetchAll($result));
                 $items++;
             }
-            utils::sortByProperty($listing['items'], 'name');
+            aws_s3_utils::sortByProperty($listing['items'], 'name');
 
             $indicesToMove = [];
             for ($i = 0; $i < count($listing['items']); $i++) {
                 if($listing['items'][$i]->dir == true)$indicesToMove[] = $i;
             }
             if (count($indicesToMove) > 0) {
-            utils::moveItemsToBeginningByIndex($listing['items'], $indicesToMove);
+                aws_s3_utils::moveItemsToBeginningByIndex($listing['items'], $indicesToMove);
             }
             $listing['total'] = count($listing['items']);  
             
@@ -156,7 +156,7 @@ final class bucket_query
                 $onerow = new \stdClass();
                 $onerow->key = $row['Key'];
                 $onerow->name = basename($onerow->key);
-                $onerow->size = utils::formatBytes($row['Size']);
+                $onerow->size = aws_s3_utils::formatBytes($row['Size']);
                 $onerow->date = strtotime( $row['LastModified'] );
         
                 $explodedfile = explode('.', $onerow->name); 

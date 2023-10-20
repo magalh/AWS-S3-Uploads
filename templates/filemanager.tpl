@@ -141,7 +141,7 @@ $(document).ready(function () {
   {$formstart}
 <div>
 	<fieldset>
-        {filebtn id='btn_newdir' iname="{$actionid}fileactionnewdir" icon='ui-icon-circle-plus' text=$mod_fm->Lang('newdir') title=$mod_fm->Lang('title_newdir')}
+        {*filebtn id='btn_newdir' iname="{$actionid}fileactionnewdir" icon='ui-icon-circle-plus' text=$mod_fm->Lang('newdir') title=$mod_fm->Lang('title_newdir')*}
         {filebtn id='btn_view' iname="{$actionid}fileactionview" icon='ui-icon-circle-zoomin' text=$mod_fm->Lang('view') title=$mod_fm->Lang('title_view')}
 		{filebtn id='btn_delete' iname="{$actionid}fileactiondelete" icon='ui-icon-trash' text=$mod_fm->Lang('delete') title=$mod_fm->Lang('title_delete')}
 	</fieldset>
@@ -175,7 +175,7 @@ $(document).ready(function () {
 				<td class="clickable" valign="middle">{$file->mime}</td>
 				<td class="clickable" style="padding-right:8px;white-space:pre;text-align:right;" valign="middle">{$file->filesize}</td>
                 <td class="clickable" style="padding-right:8px;white-space:pre;" valign="middle">{$thedate}</td>
-				<td><a href="{cms_action_url action="signed_url" key=$file->name}">{$file->openlink} {*admin_icon icon='view.gif' alt="Open"*}</a></td>
+				<td>{$file->openlink} {*admin_icon icon='view.gif' alt="Open"*}</td>
 				<td>
 				{if !isset($file->noCheckbox)}
 					<label for="x_{$file->urlname}" style="display: none;">{$mod_fm->Lang('toggle')}</label>

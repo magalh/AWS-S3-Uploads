@@ -50,10 +50,10 @@
 
 <div class="pageoverflow">
  <p class="pageinput">
-        <input type="submit" name="{$actionid}submit" value="{$mod->Lang('admin_save')}"/>
+<input type="submit" name="{$actionid}submit" value="{$mod->Lang('admin_save')}"/>
  </p>
 </div>
 {form_end}
-{if $mod->is_developer_mode()}
+{if $sdk_mod->is_developer_mode()}
   {get_template_vars}
 {/if}

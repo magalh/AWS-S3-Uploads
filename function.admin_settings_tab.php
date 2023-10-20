@@ -1,14 +1,12 @@
 <?php
 namespace AWSS3;
 
-//$utils = new \AWSS3\utils;
-//$sdk_utils = new \AWSSDK\utils;
-
 if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
-$SDK = \cms_utils::get_module('AWSSDK');
+$sdk_mod = $sdk_utils::get_mod();
 $error = 0;
+$ready = 0;
 
 if( isset($params['submit']) ) {
 
@@ -28,17 +26,16 @@ if( isset($params['submit']) ) {
     }
 }
 
-if(!$sdk_utils->is_valid()){
-    $sdk_utils->do_debug = 1;
-    $sdk_utils->getErrors();
-    $message = $SDK->_DisplayMessage($sdk_utils->errors_array,"alert-danger",true);
-}
 
 
-$awsregionnames = $SDK->get_regions_options();
+
+$awsregionnames = $sdk_mod->get_regions_options();
 
 $tpl = $smarty->CreateTemplate( $this->GetTemplateResource('admin_settings_tab.tpl'), null, null, $smarty );
-$smarty->assign('access_region_list',$awsregionnames);
+$tpl->assign('access_region_list',$awsregionnames);
+$tpl->assign('message',$message);
+$tpl->assign('error',$error);
+$tpl->assign('sdk_mod',$sdk_mod);
 $tpl->display();
 
 

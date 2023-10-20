@@ -19,6 +19,7 @@ $lang['date'] = 'Date';
 $lang['delete'] = 'Delete';
 #E
 $lang['error'] = 'Error';
+$lang['error_setup'] = 'Please complete the AWS SDK Module Setup <a href="%s">here</a>';
 $lang['expiry_interval'] = 'Remove cache files that are older than the specified number of minutes';
 #F
 $lang['friendlyname'] = 'AWSS3 Module';

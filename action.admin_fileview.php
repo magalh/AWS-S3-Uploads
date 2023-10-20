@@ -7,9 +7,6 @@ $mod_fm = \cms_utils::get_module('FileManager');
 $path='';
 //print_r($this->s3Client);
 
-use AWSS3\utils;
-$utils = new utils();
-
 if( isset($params["newdir"])) {
   $path = $params["newdir"];
 }
@@ -19,7 +16,7 @@ if( isset($params["ajax"])) {
   $smarty->assign('ajax', true);
 }
 
-$filelist=utils::get_file_list($bucket_id,$path);
+$filelist=aws_s3_utils::get_file_list($bucket_id,$path);
 
 $config = $gCms->GetConfig();
 $smarty->assign('path', $path);
@@ -136,7 +133,7 @@ for ($i = 0; $i < count($filelist); $i++) {
   } else {
     $filesize = '';
     $onerow->filesize = $filelist[$i]["size"];
-    $openlink = $this->Create_url($id,'signed_url','',array('key'=>$filelist[$i]["name"]));
+    $openlink = $this->Create_url($id,'signed','',array('key'=>$onerow->urlname));
     $onerow->openlink = "<a class=\"filelink\" href='" . $openlink . "' target='_blank' title=\"".$mod_fm->Lang('title_view_newwindow')."\"><img src=\"" . \cms_admin_utils::get_icon('view.gif') . "\"\></a>";
   }
 
