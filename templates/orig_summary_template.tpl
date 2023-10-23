@@ -23,14 +23,17 @@
 
 <div class="card">
 <ul class="list-group list-group-flush">
-{if $path_parts[1]}
-  <li class="list-group-item">{$diriconlink}</li>
+{if $up_dirurl}
+  <li class="list-group-item backup">{$up_diriconlink} {$up_dirlink}</li>
 {/if}
 {foreach from=$items item=entry}
   {if $entry->dir}
     <li class="list-group-item"><a href="{$entry->link}" class="card-link">{$entry->icon} {$entry->name}</a></li>
   {else}
-    <li class="list-group-item">{$entry->presigned_icon_link} {$entry->presigned_link}</li>
+    <li class="list-group-item">
+    <a href="{$entry->detail_link}" class="card-link">{$entry->icon}</a> 
+    {$entry->presigned_link}
+    </li>
   {/if}
 {/foreach}
 </ul>

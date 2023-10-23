@@ -46,8 +46,11 @@ class AWSS3 extends CMSModule
 		$this->RegisterModulePlugin();
         $this->RestrictUnknownParams();
 
-        $this->RegisterRoute('/[Aa]wss3\/[Ss]\/(?P<key>.*?)$/', array('action'=>'signed'));
-        $this->RegisterRoute('/[Aa]wss3\/[Pp]age]\/(?P<pagenumber>.*?)$/', array('action'=>'default'));
+        $this->RegisterRoute('/[Ss]3\/[Ss]\/(?P<key>.*?)$/', array('action'=>'signed'));
+        $this->RegisterRoute('/[Ss]3\/[Ff]ile\/(?P<key>.+?)\/(?P<returnid>[0-9]+)$/', array('action'=>'detail'));
+        $this->RegisterRoute('/[Ss]3\/[Ff]ile\/(?P<key>.+?)\/(?P<returnid>[0-9]+)\/(?P<feedback_junk>.*?)$/', array('action'=>'detail'));
+        //$this->RegisterRoute('/[Ss]3\/[Pp]age]\/(?P<pagenumber>.*?)$/', array('action'=>'default'));
+        
 
         $this->SetParameterType('id',CLEAN_STRING);
         $this->SetParameterType('prefix',CLEAN_STRING);
@@ -167,10 +170,10 @@ class AWSS3 extends CMSModule
 
     public function CreateSignedLink($name)
     {
-        $mod_fm = \cms_utils::get_module('FileManager');
+        $mod_sdk = \cms_utils::get_module('AWSSDK');
         $base_url = CMS_ROOT_URL;
-        $name = $mod_fm->encodefilename($name);
-        $out = $base_url."/awss3/s/".$name;
+        $name = $mod_sdk->encodefilename($name);
+        $out = $base_url."/S3/s/".$name;
 
         return $out;
     }
@@ -178,16 +181,17 @@ class AWSS3 extends CMSModule
     public function CreatePrettyLink($page,$prefix)
     {
         $base_url = CMS_ROOT_URL;
-        $out = $base_url."/awss3/".$page."/".$prefix;
+        $out = $base_url."/S3/".$page."/".$prefix;
 
         return $out;
     }
 
     public function getCacheFile($bucket_id,$prefix)
     {
-        $mod_fm = \cms_utils::get_module('FileManager');
+
+        $mod_sdk = \cms_utils::get_module('AWSSDK');
         $config = \cms_config::get_instance();
-        $json_file_name = 'awss3_'.$mod_fm->encodefilename($bucket_id.'_'.str_replace('/', '_', $prefix)).'.cms';
+        $json_file_name = 'awss3_'.$mod_sdk->encodefilename($bucket_id.'_'.str_replace('/', '_', $prefix)).'.cms';
         $json_file_Path = $config['tmp_cache_location'].'/'.$json_file_name;
 
         return $json_file_Path;

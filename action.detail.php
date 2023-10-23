@@ -37,7 +37,12 @@
 #END_LICENSE
 if( !defined('CMS_VERSION') ) exit;
 
+use \AWSSDK\aws_sdk_utils;
+use \AWSS3\aws_s3_utils;
+
 $helpers = $this->GetHelpers();
+
+print_r($params);
 
 try {
 
@@ -48,16 +53,11 @@ try {
 		//$this->_DisplayErrorMessage($errors);
 	}
 
-	$bucket_id = $this->GetOptionValue("bucket_id");
-	$onerow->url_presigned = aws_s3_utils::presignedUrl($bucket_id,$params['key']);
+	$key = urldecode($params['key']);
+	$bucket_id = $this->GetOptionValue('bucket_name');
+	$file_info = aws_s3_utils::get_file_info($key);
 
-	$s3Client = \AWSS3\aws_s3_utils::getS3Client();
-
-	$bucket = $this->GetOptionValue("bucket_name");
-	$file = $s3Client->getObjectUrl($bucket,$params['key']);
-	//$body = $file->get('Body');
-	//$body->rewind();
-	print_r($file);
+	//print_r($file_info);
 	
 } catch (\AWSS3\Exception $e) {
 	$this->_DisplayMessage($e->getText(),$e->getType());

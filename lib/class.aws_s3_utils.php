@@ -184,6 +184,43 @@ final class aws_s3_utils
 
     }
 
+    public static function get_file_info($prefix){
+
+        echo $prefix;
+        $mod = \cms_utils::get_module('AWSS3');
+        $s3Client = self::getS3Client();
+
+        $bucket_id = $mod->GetOptionValue("bucket_name");
+        try {
+            $file = $s3Client->getObject([
+                'Bucket' => $bucket_id,
+                'Key' => $prefix,
+            ]);
+
+            $head = $s3Client->headObject([
+                'Bucket' => $bucket_id,
+                'Key' => $prefix
+            ]);
+
+            $objectData = $result['Body']->getContents();
+            $body = $file->get('Body');
+            $body->rewind();
+            echo "Downloaded the file and it begins with: {$body->read(26)}.\n";
+
+            print_r($objectData);
+            
+        } catch (AwsException $e) {
+            $errors[] = "Failed to download $file_name from $bucket_name with error: " . $e->getAwsErrorMessage();
+            $errors[] = "Please fix error with file downloading before continuing.";
+        
+            $mod->DisplayErrorMessage($errors);
+
+        }
+
+    }
+
+    
+
     public static function deleteObject($bucket,$keyname){
         $s3 = self::getS3Client();
         try

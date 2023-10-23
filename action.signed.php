@@ -2,7 +2,7 @@
 if( !defined('CMS_VERSION') ) exit;
 use AWSS3\aws_s3_utils;
 
-$mod_fm = \cms_utils::get_module('FileManager');
+$mod_sdk = \cms_utils::get_module('AWSSDK');
 
 try {
 	if( !isset($params['key']) ) {
@@ -10,7 +10,7 @@ try {
 	}
 
 	$bucket = $this->GetOptionValue("bucket_name");
-	$key = $mod_fm->decodefilename($params['key']);
+	$key = $mod_sdk->decodefilename($params['key']);
 	$file = aws_s3_utils::presignedUrl($bucket,$key);
 	//echo $file;
 	header("Location: ".$file);
@@ -18,6 +18,6 @@ try {
 	
 } catch (\AWSS3\Exception $e) {
 	//$this->_DisplayAdminMessage($e->GetOptions(),$e->GetType());
-	aws_s3_utils::get_sdk()->_DisplayMessage($e->getText());
+	$mod_sdk->_DisplayMessage($e->getText());
 }
 ?>

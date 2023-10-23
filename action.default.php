@@ -102,34 +102,40 @@ $mod_fm = \cms_utils::get_module('FileManager');
     }
     $endelement = $startelement + $pagelimit - 1;
 
-    if( $path_parts[1] ) {
-        $counter = count($path_parts);
-        $updir = $path_parts[$counter-2]->prefix;
+    $parts_counter = count($path_parts);
+
+    if( $parts_counter >= 1 ) {
+        
+        $updir = $path_parts[$parts_counter-2]->prefix;
         $icon = $mod_fm->GetModuleURLPath().'/icons/themes/default/actions/dir_up.gif';
         $img_tag = '<img src="'.$icon.'" width="32" title="'.$this->Lang('title_changeupdir').'"/>';
-        $params['prefix'] = $updir;
-        $diriconlink = $this->CreateFrontendLink($id,$returnid, 'default', $img_tag, $params);
-        $dirlink = "<a class=\"dirlink\" href=\"{$url}\" title=\"{$this->Lang('title_changeupdir')}\">..</a>";
+        if($parts_counter > 1){
+            $params['prefix'] = $updir;
+        } else {
+            unset($params['prefix']);
+        }
+        unset($params['pagenumber']);
+        $up_dirurl = $this->CreateFrontendLink($id,$returnid,'default',$img_tag,$params,'',true);
+        $up_diriconlink = $this->CreateFrontendLink($id,$returnid,'default',$img_tag,$params,'',false,true,"class='card-link'");
+        $up_dirlink = "<a class=\"card-link\" href=\"{$up_dirurl}\" title=\"{$this->Lang('title_changeupdir')}\">..</a>";
 
-        $tpl_ob->assign('updir',$updir);
-        $tpl_ob->assign('dirlink',$dirlink);
-        $tpl_ob->assign('diriconlink',$diriconlink);
+        $tpl_ob->assign('up_dirurl',$up_dirurl);
+        $tpl_ob->assign('up_diriconlink',$up_diriconlink);
+        $tpl_ob->assign('up_dirlink',$up_dirlink);
     }
 
     $qparms = array();
     $qparms['Bucket'] = $bucket_id;
     $qparms['Prefix'] = $prefix;
     $qparms['Delimiter'] = '/';
-    //$qparms['MaxKeys'] = $pagelimit;
-
     $tpl_ob->assign('qparms',$qparms);
 
     $json_file_Path = $this->getCacheFile($bucket_id,$prefix);
 
     if($nminutes == 0) {
-        $data = bucket_query::cache_query($qparms,$json_file_Path);
+        $data = bucket_query::cache_query($qparms,$json_file_Path,$returnid);
     } else {
-        
+
         if (!file_exists($json_file_Path)) {
             $data = bucket_query::cache_query($qparms,$json_file_Path);
         } else {
@@ -149,6 +155,8 @@ $mod_fm = \cms_utils::get_module('FileManager');
     $count = isset($data->total) ? $data->total : '0';
     $pagecount = (int)($count / $pagelimit);
     if( ($count % $pagelimit) != 0 ) $pagecount++;
+
+    $params['prefix'] = $prefix;
     
     // Assign some pagination variables to smarty
     if( $pagenumber == 1 ) {
@@ -191,15 +199,12 @@ $mod_fm = \cms_utils::get_module('FileManager');
     $tpl_ob->assign('oftext',$this->Lang('prompt_of'));
     $tpl_ob->assign('pagetext',$this->Lang('prompt_page'));
 
-    
     if ($startelement < 0 || $startelement > $endelement) {
         echo "Invalid indexes.";
     } else {
         // Slice the array to extract elements between the indexes
         $selectedItems = array_slice($data->items, $startelement, $endelement - $startelement + 1);
-
         foreach( $selectedItems as $row ) {
-
             $onerow = $row;
             if($onerow->dir){
                 $sendtodetail = array('prefix'=>$onerow->key);
@@ -209,12 +214,8 @@ $mod_fm = \cms_utils::get_module('FileManager');
                 $onerow->link = $this->CreateLink($id, 'default', $returnid, '', $sendtodetail,'', true, false, '', true,$prettyurl);
                 $onerow->icon_link = "<a href='" . $onerow->link . "' class=\"card-link\">".$onerow->icon."</a>";
             }
-
-
             $entryarray[]= $onerow;
         }
-
-        //print_r($selectedItems);
     }
 
     $tpl_ob->assign('items', $entryarray);
@@ -222,9 +223,7 @@ $mod_fm = \cms_utils::get_module('FileManager');
     $tpl_ob->assign('startdate', $data->date);
     $tpl_ob->assign('enddate', $enddate);
     $tpl_ob->assign('cachetime', $nminutes);
-
     $smarty->assign('path_parts',$path_parts);
-
 
     $tpl_ob->display();
 

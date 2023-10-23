@@ -13,7 +13,8 @@ final class bucket_query
         'Bucket'=>null, 
         'Delimiter'=>null, 
         'MaxKeys'=>1000, 
-        'StartAfter'=>0
+        'StartAfter'=>0,
+        'returnid' => null
     ];
 
     public function __construct($params = array())
@@ -51,6 +52,7 @@ final class bucket_query
             break;
         case 'pagecount':
         case 'pagenum':
+        case 'returnid':
             $this->_data[$key] = (int) $val;
             break;
         }
@@ -92,7 +94,7 @@ final class bucket_query
     {
 
         try {
-            
+            //print_r($this->_data);
             $resultPaginator = $this->s3Client->getPaginator('ListObjectsV2', $this->_data);
             $listing = $this->_data;
             $listing['date'] = time();
@@ -134,7 +136,9 @@ final class bucket_query
     {
 
         $__mod = \cms_utils::get_module('AWSS3');
+        $config = cmsms()->GetConfig();
         $themeObject = \cms_utils::get_theme_object();
+        $detailspage    = $__mod->GetOptionValue('detailpage', $this->returnid);
         $entryarray = [];
 
         //Directories
@@ -155,6 +159,7 @@ final class bucket_query
 
                 $onerow = new \stdClass();
                 $onerow->key = $row['Key'];
+                $onerow->key_encoded = urlencode($onerow->key);;
                 $onerow->name = basename($onerow->key);
                 $onerow->size = aws_s3_utils::formatBytes($row['Size']);
                 $onerow->date = strtotime( $row['LastModified'] );
@@ -175,6 +180,20 @@ final class bucket_query
                 $onerow->presigned_url = $__mod->CreateSignedLink($onerow->key);
                 $onerow->presigned_link = "<a href='" . $onerow->presigned_url . "' class=\"card-link\">" . $onerow->name . "</a>";
                 $onerow->presigned_icon_link = "<a href='" . $onerow->presigned_url . "' class=\"card-link\">" . $onerow->icon . "</a>";
+                $onerow->detail_link = $__mod->create_url($id, 'detail', $detailspage, array('key' => $onerow->key_encoded));
+
+                if( $config['url_rewriting'] == 'mod_rewrite')
+                {
+                    $string_array   = [];
+                    $string_array[] = 'S3';
+                    $string_array[] = 'file';
+                    $string_array[] = $onerow->key_encoded;
+                    $string_array[] = $detailspage;
+                    $prettyurl = implode('/', $string_array);    
+                    $item_detailurl = $__mod->create_url($id, 'detail', $detailspage, array('key' => $onerow->key_encoded), false, false, $prettyurl);
+                    $onerow->detail_link = $item_detailurl;
+                }
+                
                 $entryarray[] = $onerow;
         
         }
@@ -193,9 +212,10 @@ final class bucket_query
 
     }
 
-    public static function cache_query($qparms,$json_file_Path){
+    public static function cache_query($qparms,$json_file_Path,$returnid){
 
         $query = new bucket_query($qparms);
+        $query->returnid = $returnid;
         $data = $query->execute();
         $json = json_encode($data);
         $tmp = encrypt::encrypt($json);
