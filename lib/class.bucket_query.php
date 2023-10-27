@@ -9,16 +9,18 @@ final class bucket_query
 {
     private $s3Client = null;
     private $_data = [ 
-        'Prefix'=>null, 
-        'Bucket'=>null, 
-        'Delimiter'=>null, 
-        'MaxKeys'=>1000, 
-        'StartAfter'=>0,
-        'returnid' => null
+        'prefix'=>null, 
+        'bucket'=>null, 
+        'delimiter'=>null, 
+        'maxkeys'=>1000, 
+        'startafter'=>0,
+        'returnid' => null,
+        'detailpage' => null
     ];
 
     public function __construct($params = array())
     {
+        print_r($params);
         $this->s3Client = aws_s3_utils::getS3Client();
 
         foreach( $params as $key => $val ) {
@@ -94,8 +96,13 @@ final class bucket_query
     {
 
         try {
-            //print_r($this->_data);
-            $resultPaginator = $this->s3Client->getPaginator('ListObjectsV2', $this->_data);
+
+            $qparms = array();
+            $qparms['Bucket'] = $this->bucket;
+            $qparms['Delimiter'] = '/';
+            $qparms['Prefix'] = $this->prefix;
+
+            $resultPaginator = $this->s3Client->getPaginator('ListObjectsV2', $qparms);
             $listing = $this->_data;
             $listing['date'] = time();
             $listing['items'] = [];
@@ -138,7 +145,7 @@ final class bucket_query
         $__mod = \cms_utils::get_module('AWSS3');
         $config = cmsms()->GetConfig();
         $themeObject = \cms_utils::get_theme_object();
-        $detailspage    = $__mod->GetOptionValue('detailpage', $this->returnid);
+        $detailspage = $this->detailpage;
         $entryarray = [];
 
         //Directories
@@ -212,10 +219,9 @@ final class bucket_query
 
     }
 
-    public static function cache_query($qparms,$json_file_Path,$returnid){
+    public static function cache_query($qparms,$json_file_Path){
 
         $query = new bucket_query($qparms);
-        $query->returnid = $returnid;
         $data = $query->execute();
         $json = json_encode($data);
         $tmp = encrypt::encrypt($json);

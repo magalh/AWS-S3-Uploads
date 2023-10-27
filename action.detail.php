@@ -40,27 +40,46 @@ if( !defined('CMS_VERSION') ) exit;
 use \AWSSDK\aws_sdk_utils;
 use \AWSS3\aws_s3_utils;
 
-$helpers = $this->GetHelpers();
 
-print_r($params);
+	// pass data to head section.
+	$template_head = $this->_output_frontend_css();
+	if (empty($this->FrontEndCSS))
+		$this->FrontEndCSS = '';
+	if (empty($this->FrontEndJS))
+		$this->FrontEndJS = '';
+	$templatetitle = '<!-- AWSS3 -->
+	';
+	if (!empty($template_head))
+			$this->FrontEndCSS .= $templatetitle . $template_head . '
+	';
 
-try {
-
-	if( !isset($params['key']) ) {
-		
-		throw new \AWSS3\Exception('Upload id not specified',500);
-		//$errors[] = 'Upload id not specified';
-		//$this->_DisplayErrorMessage($errors);
+	$template = null;
+	if (isset($params['detailtemplate'])) {
+		$template = trim($params['detailtemplate']);
+	}
+	else {
+		$tpl = CmsLayoutTemplate::load_dflt_by_type('AWSS3::detail');
+		if( !is_object($tpl) ) {
+			audit('',$this->GetName(),'No default detail template found');
+			return;
+		}
+		$template = $tpl->get_name();
 	}
 
-	$key = urldecode($params['key']);
-	$bucket_id = $this->GetOptionValue('bucket_name');
-	$file_info = aws_s3_utils::get_file_info($key);
+	try {
+		if( !isset($params['prefix']) ) {
+			throw new \AWSS3\Exception('Upload id not specified',500);
+		}
+	} catch (\AWSS3\Exception $e) {
+		$this->_DisplayMessage($e->getText(),$e->getType());
+	}
 
-	//print_r($file_info);
-	
-} catch (\AWSS3\Exception $e) {
-	$this->_DisplayMessage($e->getText(),$e->getType());
-}
+	$key = urldecode($params['prefix']);
+	$entry = aws_s3_utils::get_file_info($key);
+
+    $tpl_ob = $smarty->CreateTemplate($this->GetTemplateResource($template),null,null,$smarty);
+    $tpl_ob->assign('entry',$entry);
+	$tpl_ob->assign('settings',$this->GetSettingsValues());
+    $tpl_ob->display();
 
 ?>

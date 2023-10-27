@@ -57,3 +57,10 @@ code.userinput {
     margin-top: 0.5rem;
     margin-bottom: 0.5rem;
 }
+.bd-placeholder-img {
+    font-size: 1.125rem;
+    text-anchor: middle;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    user-select: none;
+}

@@ -4,6 +4,7 @@ namespace AWSS3;
 use \Aws\S3\S3Client;  
 use \Aws\Exception\AwsException;
 use \Aws\Exception\UnresolvedEndpointException;
+use \AWSSDK\Exception;
 use \AWSS3\helpers;
 
 final class aws_s3_utils
@@ -54,19 +55,20 @@ final class aws_s3_utils
             }
             
             if(!empty($this->errors)){
+                //print_r($this->errors);
                 throw new \AWSSDK\Exception($this->errors,"slide-danger");
             }
 
             $s3 = self::getS3Client();
             if (is_array($s3) && !$s3['conn']){
                 $this->errors[] = $s3['message'];
-                throw new \AWSS3\Exception($this->errors,"slide-danger");
+                throw new \AWSSDK\Exception($this->errors,"slide-danger");
             }
             $this->s3Client = $s3;
 
             if(!$this->s3Client->doesBucketExist($this->mod->GetPreference('bucket_name'))){
                 $this->errors[] = $this->mod->GetPreference('bucket_name')." does not exist";
-                throw new \AWSS3\Exception($this->errors,"slide-danger");
+                throw new \AWSSDK\Exception($this->errors,"slide-danger");
             }
 
             $smarty->assign("bucket_name",$this->mod->GetPreference('bucket_name'));
@@ -75,7 +77,7 @@ final class aws_s3_utils
             //helpers::_DisplayAdminMessage(null,array(self::lang('msg_vrfy_integrityverified')));
 
         }
-        catch (\AWSS3\Exception $e) {
+        catch (\AWSSDK\Exception $e) {
             $this->awssdk->_DisplayMessage($e->getText(),$e->getType());
             return false;
         }
@@ -172,7 +174,6 @@ final class aws_s3_utils
             ]);
             $body = $file->get('Body');
             $body->rewind();
-            echo "Downloaded the file and it begins with: {$body->read(26)}.\n";
             
         } catch (AwsException $e) {
             $errors[] = "Failed to download $file_name from $bucket_name with error: " . $e->getAwsErrorMessage();
@@ -186,7 +187,6 @@ final class aws_s3_utils
 
     public static function get_file_info($prefix){
 
-        echo $prefix;
         $mod = \cms_utils::get_module('AWSS3');
         $s3Client = self::getS3Client();
 
@@ -202,12 +202,19 @@ final class aws_s3_utils
                 'Key' => $prefix
             ]);
 
-            $objectData = $result['Body']->getContents();
-            $body = $file->get('Body');
-            $body->rewind();
-            echo "Downloaded the file and it begins with: {$body->read(26)}.\n";
+            $onerow = new \stdClass();
+            $onerow->name = $prefix;
+            $onerow->bucket = $bucket_id;
+            $onerow->mime = $head['ContentType'];
+            $onerow->size=self::formatBytes($file['ContentLength']);
+            $onerow->postdate=strtotime( $file['LastModified'] );
+            $onerow->url_original = self::getUrl($prefix);
+            $onerow->url = $mod->GetPrettyUrl($prefix);
+            $onerow->url_presigned = self::presignedUrl($prefix);
+            $onerow->url = str_replace('\\','/',$onerow->url); // windoze both sucks, and blows.
 
-            print_r($objectData);
+            return $onerow;
+
             
         } catch (AwsException $e) {
             $errors[] = "Failed to download $file_name from $bucket_name with error: " . $e->getAwsErrorMessage();
@@ -287,10 +294,23 @@ final class aws_s3_utils
         return $credentials;
     }
 
-    public static function presignedUrl($bucket_id,$key){
+    public static function getUrl($key){
+        $mod = self::get_mod();
+        $bucket_id = $mod->GetOptionValue("bucket_name");
 
-        $me = self::getInstance();
-        set_error_handler(array($me, 'catchWarning'));
+        $s3Client = self::getS3Client();
+        $url = $s3Client->getObjectUrl($bucket_id, $key);
+       
+        return $url;
+
+    }
+
+    public static function presignedUrl($key){
+
+        $mod = self::get_mod();
+        $bucket_id = $mod->GetOptionValue("bucket_name");
+        $use_custom_url = $mod->GetOptionValue("use_custom_url");
+        $custom_url = $mod->GetOptionValue("custom_url");
 
         try {
             $s3Client = self::getS3Client();
@@ -299,8 +319,26 @@ final class aws_s3_utils
                 'Key' => $key
             ]);
 
-            $request = $s3Client->createPresignedRequest($cmd, '+20 minutes');
+            $request = $s3Client->createPresignedRequest($cmd, '+1 hour');
             $presignedUrl = (string)$request->getUri();
+
+            if( $use_custom_url && $custom_url ) {
+                $urlParts = parse_url($presignedUrl);
+                if ($urlParts === false) {
+                    echo "Error parsing the URL";
+                } else {
+                    $urlParts['scheme'] = parse_url($custom_url, PHP_URL_SCHEME);
+                    $urlParts['host'] = parse_url($custom_url, PHP_URL_HOST);
+                    $newUrl = $urlParts['scheme'] . '://' . $urlParts['host'];
+                    if (isset($urlParts['path'])) {
+                        $newUrl .= $urlParts['path'];
+                    }
+                    if (isset($urlParts['query'])) {
+                        $newUrl .= '?'.$urlParts['query'];
+                    }
+                    $presignedUrl = $newUrl;
+                }
+            }
 
             return $presignedUrl;
 
@@ -313,9 +351,6 @@ final class aws_s3_utils
             ));
 
         }
-
-        restore_error_handler();
-
        
     }
 

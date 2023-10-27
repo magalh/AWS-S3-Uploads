@@ -26,5 +26,7 @@ try {
     // log it
     audit('',$this->GetName(),'Uninstall Error: '.$e->GetMessage());
   }
+
+  $this->RemoveEventHandler('Core', 'ContentPostRender');
   
 ?>

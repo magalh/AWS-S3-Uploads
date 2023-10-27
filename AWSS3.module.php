@@ -22,7 +22,10 @@ class AWSS3 extends CMSModule
     \spl_autoload_register([$this, 'autoload']);
     //$foo = \ModuleOperations::get_instance()->get_module_instance(\MOD_AWSS3, NULL, TRUE);
     parent::__construct();
-        
+    $smarty = cmsms()->GetSmarty();
+    $sdk_mod = cms_utils::get_module( 'AWSSDK' );
+    $smarty->assign('sdk_mod',$sdk_mod);
+
     $class = \get_class($this);
   
     if(!\defined('MOD_' . \strtoupper($class) ) )
@@ -36,7 +39,8 @@ class AWSS3 extends CMSModule
 
   public function autoload($classname) : bool
   {
-      $sdk_mod = cms_utils::get_module( 'AWSSDK' );
+    
+    $sdk_mod = cms_utils::get_module( 'AWSSDK' );
       $path = $sdk_mod->GetModulePath() . '/lib';
       require_once $path.'/SDK/aws-autoloader.php';
       return TRUE;
@@ -45,33 +49,32 @@ class AWSS3 extends CMSModule
 	public function InitializeFrontend() {
 		$this->RegisterModulePlugin();
         $this->RestrictUnknownParams();
-
-        $this->RegisterRoute('/[Ss]3\/[Ss]\/(?P<key>.*?)$/', array('action'=>'signed'));
-        $this->RegisterRoute('/[Ss]3\/[Ff]ile\/(?P<key>.+?)\/(?P<returnid>[0-9]+)$/', array('action'=>'detail'));
-        $this->RegisterRoute('/[Ss]3\/[Ff]ile\/(?P<key>.+?)\/(?P<returnid>[0-9]+)\/(?P<feedback_junk>.*?)$/', array('action'=>'detail'));
-        //$this->RegisterRoute('/[Ss]3\/[Pp]age]\/(?P<pagenumber>.*?)$/', array('action'=>'default'));
         
-
-        $this->SetParameterType('id',CLEAN_STRING);
+        $this->SetParameterType('action', CLEAN_STRING);
         $this->SetParameterType('prefix',CLEAN_STRING);
-        $this->SetParameterType('key',CLEAN_STRING);
-        $this->SetParameterType('key2',CLEAN_STRING);
-        $this->SetParameterType('key3',CLEAN_STRING);
-        $this->SetParameterType('title',CLEAN_STRING);
-        $this->SetParameterType('inline',CLEAN_INT);
         $this->SetParameterType('pagenum',CLEAN_INT);
         $this->SetParameterType('pagelimit',CLEAN_INT);
         $this->SetParameterType('summarytemplate',CLEAN_STRING);
-        $this->SetParameterType('sortby',CLEAN_STRING);
-        $this->SetParameterType('sortorder',CLEAN_STRING);
-        $this->SetParameterType('showall',CLEAN_INT);
         $this->SetParameterType('detailpage',CLEAN_STRING);
         $this->SetParameterType('detailtemplate',CLEAN_STRING);
+        $this->SetParameterType('junk',CLEAN_STRING);
+
+        $this->RegisterRoute('/[Ss]3\/[Ss]\/(?P<prefix>.*?)$/', array('action'=>'signed'));
+        $this->RegisterRoute('/[Ss]3\/[Ff]ile\/(?P<prefix>.*)\/(?P<returnid>[0-9]+)$/', array('action'=>'detail'));
+        $this->RegisterRoute('/[Ss]3\/[Ff]ile\/(?P<prefix>.*)\/(?P<returnid>[0-9]+)\/(?P<junk>.*?)$/', array('action'=>'detail'));
+        //$this->RegisterRoute('/[Ss]3\/[Pp]age]\/(?P<pagenumber>.*?)$/', array('action'=>'default'));
 
 	}
 
 	 public function InitializeAdmin() {
 		 $this->SetParameters();
+         $this->CreateParameter('prefix',null,$this->Lang('help_param_prefix'));
+         $this->CreateParameter('pagelimit',null,$this->Lang('help_param_pagelimit'));
+         $this->CreateParameter('summarypage',null,$this->Lang('help_param_summarypage'));
+         $this->CreateParameter('summarytemplate',null,$this->Lang('help_param_summarytemplate'));
+         $this->CreateParameter('detailpage',null,$this->Lang('help_param_detailpage'));
+         $this->CreateParameter('detailtemplate',null,$this->Lang('help_param_detailtemplate'));
+         #$this->CreateParameter('detailpage',null,$this->Lang('help_param_detailpage'));
 	 }
 	
 	public function GetHelp() { return @file_get_contents(__DIR__.'/README.md'); }
@@ -101,6 +104,38 @@ class AWSS3 extends CMSModule
 
         return $out;
     }
+
+    protected function _output_frontend_css()
+    {
+        $out = '';
+        $urlpath = $this->GetModuleURLPath();
+        $fmt = '<link rel="stylesheet" type="text/css" href="%s/%s"/>';
+        $cssfiles = array('css/style.css');
+        //$cssfiles[] = 'css/style.css';
+        foreach( $cssfiles as $one ) {
+            $out .= sprintf($fmt,$urlpath,$one);
+        }
+        return $out;
+    }
+
+    /**
+	 * DoEvent methods
+	 */
+	function DoEvent($originator, $eventname, &$params) {
+		if ($originator == 'Core' && $eventname == 'ContentPostRender')
+		{
+			$pos_top = stripos($params["content"], "</head");
+			if ($pos_top !== FALSE && !empty($this->FrontEndCSS))
+			{
+				$params["content"] = substr($params["content"], 0, $pos_top) . $this->FrontEndCSS . substr($params["content"], $pos_top);
+			}
+			$pos_btm = strripos($params["content"], "</body");
+			if ($pos_btm !== FALSE && !empty($this->FrontEndJS))
+			{
+				$params["content"] = substr($params["content"], 0, $pos_btm) . $this->FrontEndJS . substr($params["content"], $pos_btm);
+			}
+		}
+	}
 
 	public function GetFileIcon($extension,$isdir=false) {
         if (empty($extension)) $extension = '---'; // hardcode extension to something.
@@ -186,9 +221,28 @@ class AWSS3 extends CMSModule
         return $out;
     }
 
-    public function getCacheFile($bucket_id,$prefix)
+    public function GetPrettyUrl($prefix=null)
     {
+        $use_custom_url = $this->GetOptionValue("use_custom_url");
+        $custom_url = $this->GetOptionValue("custom_url");
+        if( $use_custom_url && $custom_url ) {
+            $url = $custom_url;
+        } else {
+            //https://pixelsolution.s3.eu-south-1.amazonaws.com
+            $url = "https://".$this->GetOptionValue('bucket_name').".s3.".$this->GetOptionValue('access_region').".amazonaws.com";
+        }
+        if(isset($prefix)){
+            return $url.'/'.$prefix;
+        } else {
+            return $url;
+        }
+        
+    }
 
+    public function getCacheFile($qparms)
+    {
+        $bucket_id = $qparms['bucket'];
+        $prefix = $qparms['prefix'];
         $mod_sdk = \cms_utils::get_module('AWSSDK');
         $config = \cms_config::get_instance();
         $json_file_name = 'awss3_'.$mod_sdk->encodefilename($bucket_id.'_'.str_replace('/', '_', $prefix)).'.cms';

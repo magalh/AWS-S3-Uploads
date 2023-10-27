@@ -7,7 +7,7 @@ $lang['access_key'] = 'Access keys';
 $lang['allowed'] = 'Allowed';
 $lang['author_label'] = 'Posted by:';
 $lang['choose_file'] = 'Choose file';
-
+$lang['access_region'] = 'Region';
 #B
 $lang['bucket_name'] = 'Bucket Name';
 #C
@@ -17,6 +17,7 @@ $lang['config'] = 'AWS S3 Module Configuration';
 #D
 $lang['date'] = 'Date';
 $lang['delete'] = 'Delete';
+$lang['default_options'] = 'Module defaults';
 #E
 $lang['error'] = 'Error';
 $lang['error_setup'] = 'Please complete the AWS SDK Module Setup <a href="%s">here</a>';
@@ -28,6 +29,22 @@ $lang['fielddef_allow_help'] = 'Specify a comma separated list of file extension
 #G
 $lang['getstarted'] = 'Get Started with AWS S3 Module';
 #H
+$lang['help_param_action'] = '
+    Override the default action. Possible values are:
+    <ul>
+        <li>&quot;default&quot; - displays the summary view.</li>
+        <li>&quot;detail&quot; - displays a specified entry in detail mode.</li>
+        <li>&quot;search&quot; - displays the search form. Optional parameters that affect to this action only: <em>filter.</em></li>
+        <li>&quot;category&quot; - displays the categories. Optional parameters that affect to this action only: <em>show_items, collapse, number_of_levels.</em></li>
+        <li>&quot;archive&quot; - displays the archives. </li>
+    </ul>';
+$lang['help_param_prefix'] = 'A string of characters that can be the complete path in front of the object name. Project/WordFiles/...';
+$lang['help_param_detailtemplate'] = 'The detail template you wish to use.';
+$lang['help_param_summarytemplate'] = 'The summary template you wish to use.';
+$lang['help_param_pagelimit'] = 'Maximum number of items to display (per page).  If this parameter is not supplied all matching items will be displayed.  If it is, and there are more items available than specified in the parameter, text and links will be supplied to allow scrolling through the results';
+$lang['help_param_detailpage'] = 'Page to display item details in. Must be a page alias/id. Used to allow details to be displayed in a different page than summary.';
+$lang['help_param_summarypage'] = 'Page to display item summary in. Must be a page alias/id. Used to allow summaries to be displayed in a different page than initiator.';
+
 $lang['help_access_key'] = <<<EOT
 <h3>Managing access keys (console)</h3>
 <p>You can use the AWS Management Console to manage the access keys of an IAM user.<br></p>
@@ -53,6 +70,11 @@ $lang['help_custom_url'] = 'Custom URL can be a Cloudfront URL or if any url map
 #L
 $lang['logfilepath'] = 'Please provide your full Log File path, including filename';
 $lang['line'] = 'Line';
+$lang['label_size'] = 'Size';
+$lang['label_url_original'] = 'Original Url';
+$lang['label_url'] = 'Url';
+$lang['label_url_presigned'] = 'Presigned Url';
+$lang['label_mime'] = 'Mime';
 #M
 $lang['message'] = 'Message';
 $lang['msg_vrfy_integrityverified'] = 'Connection Established';
@@ -68,6 +90,8 @@ $lang['prompt_dropfiles'] = 'Drop files here to upload';
 $lang['prompt_move'] = 'Move Items to Another Directory';
 $lang['prompt_use_custom_url'] = 'Use Custom URL';
 $lang['prompt_custom_url'] = 'Custom URL';
+$lang['prompt_detailpage'] = 'Detail page';
+$lang['prompt_summarypage'] = 'Summary page';
 $lang['firstpage'] = '&lt;&lt;';
 $lang['prevpage'] = '&lt;';
 $lang['nextpage'] = '&gt;';
@@ -86,7 +110,7 @@ $lang['required'] = 'Required';
 $lang['submit'] = 'Submit';
 $lang['access_key'] = 'AWS Access Key ID';
 $lang['access_secret_key'] = 'AWS Secret Access Key';
-$lang['bucket_name'] = 'AWS Bucket Name';
+$lang['bucket_name'] = 'Bucket Name';
 $lang['custom_url'] = 'Custom URL';
 $lang['sorry_nofiles'] = 'Sorry, we could not find any files';
 #T

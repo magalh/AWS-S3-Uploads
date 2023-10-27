@@ -48,6 +48,18 @@
   </div>
 </fieldset>
 
+<fieldset>
+	<legend>{$mod->Lang('default_options')}</legend>
+	<div class="pageoverflow">
+        <p class="pagetext">{$mod->Lang('prompt_detailpage')}:</p>
+        <p class="pageinput">{$input_detailpage}</p>
+    </div> 
+	<div class="pageoverflow">
+        <p class="pagetext">{$mod->Lang('prompt_summarypage')}:</p>
+        <p class="pageinput">{$input_summarypage}</p>
+    </div> 	
+</fieldset>
+
 <div class="pageoverflow">
  <p class="pageinput">
 <input type="submit" name="{$actionid}submit" value="{$mod->Lang('admin_save')}"/>
@@ -55,5 +67,5 @@
 </div>
 {form_end}
 {if $sdk_mod->is_developer_mode()}
-  {get_template_vars}
+  {*get_template_vars*}
 {/if}

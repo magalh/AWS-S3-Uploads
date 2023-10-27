@@ -83,4 +83,9 @@ try {
     audit('',$this->GetName(),'Installation Error: '.$e->GetMessage());
   }
 
+
+  // create preferences
+$this->SetPreference('allowed', 'jpg,jpeg,gif,png');
+$this->AddEventHandler('Core', 'ContentPostRender', false);
+
 ?>

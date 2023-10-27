@@ -1,4 +1,3 @@
-
 <div class="d-md-flex flex-md-row-reverse align-items-center justify-content-between">
   <div class="mb-3 mb-md-0 d-flex text-nowrap">
   <small class="d-inline-flex px-2 py-1 fw-semibold text-success-emphasis bg-success-subtle border border-success-subtle rounded-2 me-2">Last Refreshed {$startdate|localedate_format:'j %h Y H:i:s'}</small>
@@ -51,4 +50,3 @@
 </p>
 {/if}
 <!-- End AWSS3 Display Template -->
-{get_template_vars}

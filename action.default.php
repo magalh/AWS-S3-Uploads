@@ -41,7 +41,7 @@ use \AWSS3\aws_s3_utils;
 use \AWSS3\bucket_query;
 use \AWSS3\encrypt;
 
-$mod_fm = \cms_utils::get_module('FileManager');
+    $mod_fm = \cms_utils::get_module('FileManager');
 
     $bucket_id = $this->GetOptionValue('bucket_name');
     $nminutes     = (int)$this->GetPreference('expiry_interval', 180);
@@ -52,7 +52,6 @@ $mod_fm = \cms_utils::get_module('FileManager');
         $this->_DisplayMessage('no bucket selected',500);
         return;
     }
-
     $template = null;
     if (isset($params['summarytemplate'])) {
         $template = trim($params['summarytemplate']);
@@ -66,6 +65,23 @@ $mod_fm = \cms_utils::get_module('FileManager');
         $template = $tpl->get_name();
     }
 
+    if(isset($params['detailpage'])) {
+
+        if(is_numeric($params['detailpage'])) {
+            $detailpage = $params['detailpage'];
+        }
+        else {			
+            $hm = cmsms()->GetHierarchyManager();				
+            $detailpage = $hm->sureGetNodeByAlias($params['detailpage'])->GetId();
+        }
+    }
+    else
+    {
+        $detailpage = $this->GetPreference('detailpage', $returnid);
+    }
+    if( empty($detailpage) || $detailpage == -1 ) { $detailpage = $returnid; }
+
+    $debug = isset($params['debug']);
     $template = 'orig_summary_template.tpl';
     $tpl_ob = $smarty->CreateTemplate($this->GetTemplateResource($template),null,null,$smarty);
 
@@ -125,15 +141,16 @@ $mod_fm = \cms_utils::get_module('FileManager');
     }
 
     $qparms = array();
-    $qparms['Bucket'] = $bucket_id;
-    $qparms['Prefix'] = $prefix;
-    $qparms['Delimiter'] = '/';
+    $qparms['bucket'] = $bucket_id;
+    $qparms['prefix'] = $prefix;
+    $qparms['returnid'] = $returnid;
+    $qparms['detailpage'] = $detailpage;
     $tpl_ob->assign('qparms',$qparms);
 
-    $json_file_Path = $this->getCacheFile($bucket_id,$prefix);
+    $json_file_Path = $this->getCacheFile($qparms);
 
     if($nminutes == 0) {
-        $data = bucket_query::cache_query($qparms,$json_file_Path,$returnid);
+        $data = bucket_query::cache_query($qparms,$json_file_Path);
     } else {
 
         if (!file_exists($json_file_Path)) {
@@ -219,12 +236,15 @@ $mod_fm = \cms_utils::get_module('FileManager');
     }
 
     $tpl_ob->assign('items', $entryarray);
-    
     $tpl_ob->assign('startdate', $data->date);
     $tpl_ob->assign('enddate', $enddate);
     $tpl_ob->assign('cachetime', $nminutes);
-    $smarty->assign('path_parts',$path_parts);
+    $tpl_ob->assign('path_parts',$path_parts);
 
     $tpl_ob->display();
+
+    if($debug) 
+    //print_r($qparms);
+	$tpl_ob->display('string:<pre>{$qparms|@print_r}</pre>');
 
 ?>

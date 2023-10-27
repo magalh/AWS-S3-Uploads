@@ -1,68 +1,27 @@
-{* set a canonical variable that can be used in the head section if process_whole_template is false in the config.php *}
-{if isset($entry->canonical)}
-  {* note this syntax ensures that the canonical variable is set into global scope *}
-  {assign var='canonical' value=$entry->canonical scope=global}
-{/if}
-
-{if $entry->postdate}
-	<div id="NewsPostDetailDate">
-		{$entry->postdate|cms_date_format}
-	</div>
-{/if}
-<h3 id="NewsPostDetailTitle">{$entry->title|cms_escape:htmlall}</h3>
-
-<hr id="NewsPostDetailHorizRule" />
-
-{if $entry->summary}
-	<div id="NewsPostDetailSummary">
-		<strong>
-			{$entry->summary}
-		</strong>
-	</div>
-{/if}
-
-{if $entry->category}
-	<div id="NewsPostDetailCategory">
-		{$category_label} {$entry->category}
-	</div>
-{/if}
-{if $entry->author}
-	<div id="NewsPostDetailAuthor">
-		{$author_label} {$entry->author}
-	</div>
-{/if}
-
-<div id="NewsPostDetailContent">
-        {* note, for security purposes we do not pass the content through smarty before displaying it.  This is incase your articles can come from untrusted sources. *}
-	{$entry->content}
+<div class="row mb-2">
+<div class="col-md-6">
+  <div class="row g-0 border rounded overflow-hidden flex-md-row mb-4 shadow-sm h-md-250 position-relative">
+    <div class="col p-4 d-flex flex-column position-static">
+    {if isset($entry->bucket)}
+      <strong class="d-inline-block mb-2 text-primary">{$entry->bucket}</strong>
+    {/if}
+      <h3 class="mb-0">{$entry->name|cms_escape:htmlall}</h3>
+      {if $entry->postdate}<div class="mb-1 text-muted">{$entry->postdate|cms_date_format}</div>{/if}
+      <p class="card-text mb-auto">{$mod->Lang('label_mime')} {$entry->mime}, {$mod->Lang('label_size')} {$entry->size}</p>
+      <ol class="list-unstyled mb-0">
+        {if $entry->url_original}<li><a href="{$entry->url_original}">{$mod->Lang('label_url_original')}</a></li>{/if}
+        {if $entry->url}<li><a href="{$entry->url}">{$mod->Lang('label_url')}</a></li>{/if}
+        {if $entry->url_presigned}<li><a href="{$entry->url_presigned}">{$mod->Lang('label_url_presigned')}</a></li>{/if}
+        </ol>
+    </div>
+    <div class="col-auto d-none d-lg-block p-0">
+        <div class="bd-placeholder-img" width="200">
+          <img src="{$entry->url_presigned}" width="200"/>
+        </div>
+    </div>
+  </div>
 </div>
-
-{if $entry->extra}
-	<div id="NewsPostDetailExtra">
-		{$extra_label} {$entry->extra}
-	</div>
-{/if}
-
-{if $return_url != ""}
-<div id="NewsPostDetailReturnLink">{$return_url}{if $category_name != ''} - {$category_link}{/if}</div>
-{/if}
-
-{if isset($entry->fields)}
-  {foreach $entry->fields as $fieldname => $field}
-     <div class="NewsDetailField">
-        {if $field->type == 'file'}
-	  {* this template assumes that every file uploaded is an image of some sort, because News doesn't distinguish *}
-          {if isset($field->value) && $field->value}
-            <img src="{$entry->file_location}/{$field->value}" alt="{$field->value}"/>
-          {/if}
-        {elseif $field->type == 'linkedfile'}
-          {* also assume it's an image... *}
-          {if !empty($field->value)}
-            <img src="{file_url file=$field->value}" alt="{$field->value}"/>
-          {/if}
-        {else}
-          {$field->name}:&nbsp;{$field->value}
-        {/if}
-     </div>
-  {/foreach}
+</div>
+{if $sdk_mod->is_developer_mode()}
+  {get_template_vars}
 {/if}
