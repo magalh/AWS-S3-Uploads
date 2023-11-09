@@ -12,7 +12,7 @@
 <ul>
 <li>For the latest version of this module or to file a Feature Request or Bug Report, please visit the Module Forge
 <a href="http://dev.cmsmadesimple.org/projects/AWSS3" target="_blank">AWSS3 Page</a>.</li>
-<li>Additional discussion of this module may also be found in the <a href="https://forum.cmsmadesimple.org/viewtopic.php?f=7&t=83400">AWSS3 forum topic</a>. You are warmly invited to open a new topic if you didn't find an answer to your question.</li>
+<li>Additional discussion of this module may also be found in the <a href="https://forum.cmsmadesimple.org/viewtopic.php?f=7&t=83788">AWSS3 forum topic</a>. You are warmly invited to open a new topic if you didn't find an answer to your question.</li>
 <li>Lastly, if you enjoy this module, use it on a commercial website or would like to encourage future development, you might consider just a small donation. Any kind of feedback will be much appreciated.<br>
 <a href="https://www.paypal.com/donate/?hosted_button_id=FWHABZUN3NC4N" target="_blank"><img src="https://raw.githubusercontent.com/aha999/DonateButtons/master/paypal-donate-icon-7.png" width="120" ></a><br>
 	</li>
