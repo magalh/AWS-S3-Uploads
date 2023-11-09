@@ -1,4 +1,31 @@
 <?php
+#---------------------------------------------------------------------------------------------------
+# Module: AWSS3
+# Authors: Magal Hezi, with CMS Made Simple Foundation.
+# Copyright: (C) 2023 Magal Hezi, h_magal@hotmail.com
+# Licence: GNU General Public License version 3. See http://www.gnu.org/licenses/  
+#---------------------------------------------------------------------------------------------------
+# CMS Made Simple(TM) is (c) CMS Made Simple Foundation 2004-2020 (info@cmsmadesimple.org)
+# Project's homepage is: http://www.cmsmadesimple.org
+# Module's homepage is: http://dev.cmsmadesimple.org/projects/AWSS3
+#---------------------------------------------------------------------------------------------------
+# This program is free software; you can redistribute it and/or modify it under the terms of the GNU
+# General Public License as published by the Free Software Foundation; either version 3 of the 
+# License, or (at your option) any later version.
+#
+# However, as a special exception to the GPL, this software is distributed
+# as an addon module to CMS Made Simple.  You may not use this software
+# in any Non GPL version of CMS Made simple, or in any version of CMS
+# Made simple that does not indicate clearly and obviously in its admin
+# section that the site was built with CMS Made simple.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+# See the GNU General Public License for more details.
+#---------------------------------------------------------------------------------------------------
+
+use \AWSS3\aws_s3_utils;
+
 class AWSS3 extends CMSModule
 {
 	const MANAGE_PERM = 'manage_AWSS3';	
@@ -8,7 +35,7 @@ class AWSS3 extends CMSModule
 	public function GetAdminDescription() { return $this->Lang('admindescription'); }
 	public function IsPluginModule() { return TRUE; }
 	public function HasAdmin() { return TRUE; }
-	public function GetHeaderHTML() { return $this->_output_header_javascript(); }
+	public function GetHeaderHTML() { return $this->_output_header_assets(); }
 	public function VisibleToAdminUser() { return $this->CheckPermission(self::MANAGE_PERM); }
 	public function GetAuthor() { return 'Magal Hezi'; }
 	public function GetAuthorEmail() { return 'h_magal@hotmail.com'; }
@@ -17,24 +44,27 @@ class AWSS3 extends CMSModule
     public function MinimumCMSVersion() { return '2.2.1'; }
     public function GetDependencies() { return ['AWSSDK' => '1.0.0']; }
 
-    public function __construct()
-  {
-    \spl_autoload_register([$this, 'autoload']);
-    //$foo = \ModuleOperations::get_instance()->get_module_instance(\MOD_AWSS3, NULL, TRUE);
-    parent::__construct();
-    $smarty = cmsms()->GetSmarty();
-    $sdk_mod = cms_utils::get_module( 'AWSSDK' );
-    $smarty->assign('sdk_mod',$sdk_mod);
+    public function __construct(){
+        parent::__construct();
 
-    $class = \get_class($this);
-  
-    if(!\defined('MOD_' . \strtoupper($class) ) )
-    {
-      /**
-       * @ignore
-       */
-      \define('MOD_' . \strtoupper($class), $class);
-    }
+        \spl_autoload_register([$this, 'autoload']);
+
+        $smarty = \CmsApp::get_instance()->GetSmarty();
+        if( !$smarty ) return;
+
+        $sdk = cms_utils::get_module( 'AWSSDK' );
+        $fn = $this->GetModulePath().'/lib/class.aws_s3_utils.php'; require_once($fn);
+        $fn = $sdk->GetModulePath().'/lib/class.aws_sdk_utils.php'; require_once($fn);
+
+        $smarty->registerClass('s3_utils','\AWSS3\aws_s3_utils');
+        $smarty->registerClass('sdk_utils','\AWSSDK\aws_sdk_utils');
+        
+        $smarty->assign('sdk',$sdk);
+
+        if ($sdk->is_developer_mode()){
+            $smarty->assign('isdev',true);
+        }
+    
   }
 
   public function autoload($classname) : bool
@@ -62,7 +92,6 @@ class AWSS3 extends CMSModule
         $this->RegisterRoute('/[Ss]3\/[Ss]\/(?P<prefix>.*?)$/', array('action'=>'signed'));
         $this->RegisterRoute('/[Ss]3\/[Ff]ile\/(?P<prefix>.*)\/(?P<returnid>[0-9]+)$/', array('action'=>'detail'));
         $this->RegisterRoute('/[Ss]3\/[Ff]ile\/(?P<prefix>.*)\/(?P<returnid>[0-9]+)\/(?P<junk>.*?)$/', array('action'=>'detail'));
-        //$this->RegisterRoute('/[Ss]3\/[Pp]age]\/(?P<pagenumber>.*?)$/', array('action'=>'default'));
 
 	}
 
@@ -80,7 +109,7 @@ class AWSS3 extends CMSModule
 	public function GetHelp() { return @file_get_contents(__DIR__.'/README.md'); }
 	public function GetChangeLog() { return @file_get_contents(__DIR__.'/doc/changelog.inc'); }
 
-	protected function _output_header_javascript()
+	protected function _output_header_assets()
     {
         $out = '';
         $urlpath = $this->GetModuleURLPath()."/js";
@@ -228,7 +257,6 @@ class AWSS3 extends CMSModule
         if( $use_custom_url && $custom_url ) {
             $url = $custom_url;
         } else {
-            //https://pixelsolution.s3.eu-south-1.amazonaws.com
             $url = "https://".$this->GetOptionValue('bucket_name').".s3.".$this->GetOptionValue('access_region').".amazonaws.com";
         }
         if(isset($prefix)){

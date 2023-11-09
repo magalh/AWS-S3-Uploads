@@ -25,49 +25,29 @@
 #---------------------------------------------------------------------------------------------------
 
 if( !defined('CMS_VERSION') ) exit;
+if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
-use \AWSSDK\aws_sdk_utils;
-use \AWSS3\aws_s3_utils;
+$path='';
+if( isset($params["prefix"])) {
+  $path = $params["prefix"];
+  $smarty->assign('hiddenpath', $this->CreateInputHidden($id, "prefix", $path));
+}
 
-	// pass data to head section.
-	$template_head = $this->_output_frontend_css();
-	$templatetitle = '<!-- AWSS3 -->
-	';
-	if (!empty($template_head))
-			$this->FrontEndCSS .= $templatetitle . $template_head . '
-	';
+$smarty->assign('formstart',$this->CreateFormStart($id, 'upload_admin', $returnid,"post","multipart/form-data"));
+$smarty->assign('actionid',$id);
+$smarty->assign('maxfilesize',$config["max_upload_size"]);
+$smarty->assign('submit',$this->CreateInputSubmit($id,"submit",$this->Lang("submit"),"",""));
+$smarty->assign('formend',$this->CreateFormEnd());
 
-	$debug = isset($params['debug']);
-	$template = null;
-	if (isset($params['detailtemplate'])) {
-		$template = trim($params['detailtemplate']);
-	}
-	else {
-		$tpl = CmsLayoutTemplate::load_dflt_by_type('AWSS3::detail');
-		if( !is_object($tpl) ) {
-			audit('',$this->GetName(),'No default detail template found');
-			return;
-		}
-		$template = $tpl->get_name();
-	}
 
-	try {
-		if( !isset($params['prefix']) ) {
-			throw new \AWSSDK\Exception('Upload id not specified',500);
-		}
-	} catch (\AWSSDK\Exception $e) {
-		$this->_DisplayMessage($e->getText(),$e->getType());
-	}
 
-	$key = urldecode($params['prefix']);
-	$entry = aws_s3_utils::get_file_info($key);
+$post_max_size = filemanager_utils::str_to_bytes(ini_get('post_max_size'));
+$upload_max_filesize = filemanager_utils::str_to_bytes(ini_get('upload_max_filesize'));
+$smarty->assign('max_chunksize',min($upload_max_filesize,$post_max_size-1024));
+if (isset($_SERVER['HTTP_USER_AGENT']) && (strpos($_SERVER['HTTP_USER_AGENT'], 'MSIE') !== false)) {
+    $smarty->assign('is_ie',1);
+}
+$smarty->assign('action_url_upload',$this->create_url('m1_','upload',$returnid));
+$smarty->assign('FileManager',\cms_utils::get_module('FileManager'));
 
-    $tpl_ob = $smarty->CreateTemplate($this->GetTemplateResource($template),null,null,$smarty);
-    $tpl_ob->assign('entry',$entry);
-	$tpl_ob->assign('settings',$this->GetSettingsValues());
-    $tpl_ob->display();
-
-	if($debug) 
-	$tpl_ob->display('string:<pre>{$entry|@print_r}</pre>');
-
-?>
+echo $this->ProcessTemplate('uploadview.tpl');

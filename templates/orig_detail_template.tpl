@@ -14,14 +14,13 @@
         {if $entry->url_presigned}<li><a href="{$entry->url_presigned}">{$mod->Lang('label_url_presigned')}</a></li>{/if}
         </ol>
     </div>
+    {if $entry->isimage}
     <div class="col-auto d-none d-lg-block p-0">
         <div class="bd-placeholder-img" width="200">
           <img src="{$entry->url_presigned}" width="200"/>
         </div>
     </div>
+    {/if}
   </div>
 </div>
 </div>
-{if $sdk_mod->is_developer_mode()}
-  {get_template_vars}
-{/if}

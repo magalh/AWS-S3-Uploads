@@ -1,6 +1,6 @@
 <script>{literal}
 $(function () {
-    $('#fileupload2').fileupload({
+    $('#fileupload').fileupload({
         dataType: 'json',
         start: function(e,data) {
           $('#progressarea').show();
@@ -11,7 +11,7 @@ $(function () {
           var total = null;
           total = (data.loaded / data.total * 100).toFixed(0);
           var str = perc + ' %';
-          console.log(total);
+          //console.log(total);
           barValue(total);
           
           function barValue(total) {
@@ -54,62 +54,14 @@ $(function () {
     });
 });
 {/literal}</script>
-
-
-<style type="text/css">
-  .upload-wrapper { margin: 10px 0 }
-  .hcentered { text-align: center }
-  .vcentered {
-    display: table-cell;
-    vertical-align: middle;
-  }
-  #dropzone {
-	 margin: 15px 0;
-	 border-radius: 4px;
-   background: #EEEEEE;
-	}
-  #dropzone.in {
-    width: 600px;
-    height: 200px;
-    line-height: 200px;
-    background: #147fdb;
-    border: 2px dashed #fff;
-    color: #fff;
-    font-size: larger;
-    cursor: move;
-  }
-  #dropzone.fade {
-    -webkit-transition: all 0.3s ease-out;
-    -moz-transition: all 0.3s ease-out;
-    -ms-transition: all 0.3s ease-out;
-    -o-transition: all 0.3s ease-out;
-    transition: all 0.3s ease-out;
-    opacity: 1;
-  }
-  #progressarea {
-    margin: 15px;
-    height: 2em;
-    line-height: 2em;
-    text-align: center;
-    border: 1px solid #aaa;
-    border-radius: 4px;
-    display: none;
-  }
-</style>
-
 {$formstart}
   <input type="hidden" name="disable_buffer" value="1" />
-  {$hiddenpath}{$bucket_id}
+  {$hiddenpath}
   <fieldset>
-    {if isset($is_ie)}
-      <div class="pageerrorcontainer message">
-        <p class="pageerror">{$ie_upload_message}</p>
-      </div>
-    {/if}
     <div class="upload-wrapper">
       <div style="width: 60%; float: left;">
         {*<input type="hidden" name="MAX_FILE_SIZE" value="{$maxfilesize}" />*}{* recommendation for browser *}
-        <input id="fileupload" type="file" name="{$actionid}files[]" size="50" title="{$mod_fm->Lang('title_filefield')}" multiple/>
+        <input id="fileupload" type="file" name="{$actionid}files[]" size="50" title="{$FileManager->Lang('title_filefield')}" multiple/>
         <div id="pageoverflow">
           <p class="pagetext"></p>
           <p class="pageinput">

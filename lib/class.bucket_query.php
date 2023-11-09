@@ -1,4 +1,29 @@
 <?php
+#---------------------------------------------------------------------------------------------------
+# Module: AWSS3
+# Authors: Magal Hezi, with CMS Made Simple Foundation.
+# Copyright: (C) 2023 Magal Hezi, h_magal@hotmail.com
+# Licence: GNU General Public License version 3. See http://www.gnu.org/licenses/  
+#---------------------------------------------------------------------------------------------------
+# CMS Made Simple(TM) is (c) CMS Made Simple Foundation 2004-2020 (info@cmsmadesimple.org)
+# Project's homepage is: http://www.cmsmadesimple.org
+# Module's homepage is: http://dev.cmsmadesimple.org/projects/AWSS3
+#---------------------------------------------------------------------------------------------------
+# This program is free software; you can redistribute it and/or modify it under the terms of the GNU
+# General Public License as published by the Free Software Foundation; either version 3 of the 
+# License, or (at your option) any later version.
+#
+# However, as a special exception to the GPL, this software is distributed
+# as an addon module to CMS Made Simple.  You may not use this software
+# in any Non GPL version of CMS Made simple, or in any version of CMS
+# Made simple that does not indicate clearly and obviously in its admin
+# section that the site was built with CMS Made simple.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+# See the GNU General Public License for more details.
+#---------------------------------------------------------------------------------------------------
+
 namespace AWSS3;
 
 use AWSS3\aws_s3_utils;
@@ -20,7 +45,7 @@ final class bucket_query
 
     public function __construct($params = array())
     {
-        print_r($params);
+        //print_r($params);
         $this->s3Client = aws_s3_utils::getS3Client();
 
         foreach( $params as $key => $val ) {
@@ -147,6 +172,7 @@ final class bucket_query
         $themeObject = \cms_utils::get_theme_object();
         $detailspage = $this->detailpage;
         $entryarray = [];
+        $bucket_id = $this->bucket;
 
         //Directories
         foreach ($rs['CommonPrefixes'] as $dir) {
@@ -156,6 +182,7 @@ final class bucket_query
             $onerow->name = basename($onerow->key);
             $onerow->dir = true;
             $onerow->mime = 'directory';
+            $onerow->type = array('dir');
             $onerow->ext = '';
             $onerow->icon = $__mod->GetFileIcon($onerow->ext,true);
             $entryarray[]= $onerow;
@@ -168,11 +195,23 @@ final class bucket_query
                 $onerow->key = $row['Key'];
                 $onerow->key_encoded = urlencode($onerow->key);;
                 $onerow->name = basename($onerow->key);
-                $onerow->size = aws_s3_utils::formatBytes($row['Size']);
+                $onerow->size = $row['Size'];
                 $onerow->date = strtotime( $row['LastModified'] );
         
                 $explodedfile = explode('.', $onerow->name); 
                 $onerow->ext = array_pop($explodedfile);
+                $onerow->type = array('file');
+
+                $head = $this->s3Client->headObject([
+                    'Bucket' => $bucket_id,
+                    'Key' => $onerow->key
+                ]);
+
+                $onerow->mime = $head['ContentType'];
+
+                if( strpos($onerow->mime,'text') !== FALSE ) {
+                    $onerow->type[] = 'text';
+                  }
                 
                 if($__mod->GetOptionValue("custom_url") !== '' && $__mod->GetOptionValue("use_custom_url") == true ){
                     $base_url = $__mod->GetOptionValue("custom_url").'/';
@@ -187,7 +226,7 @@ final class bucket_query
                 $onerow->presigned_url = $__mod->CreateSignedLink($onerow->key);
                 $onerow->presigned_link = "<a href='" . $onerow->presigned_url . "' class=\"card-link\">" . $onerow->name . "</a>";
                 $onerow->presigned_icon_link = "<a href='" . $onerow->presigned_url . "' class=\"card-link\">" . $onerow->icon . "</a>";
-                $onerow->detail_link = $__mod->create_url($id, 'detail', $detailspage, array('key' => $onerow->key_encoded));
+                $onerow->detail_link = $__mod->create_url($id, 'detail', $detailspage, array('prefix' => $onerow->key_encoded));
 
                 if( $config['url_rewriting'] == 'mod_rewrite')
                 {
@@ -197,8 +236,9 @@ final class bucket_query
                     $string_array[] = $onerow->key_encoded;
                     $string_array[] = $detailspage;
                     $prettyurl = implode('/', $string_array);    
-                    $item_detailurl = $__mod->create_url($id, 'detail', $detailspage, array('key' => $onerow->key_encoded), false, false, $prettyurl);
-                    $onerow->detail_link = $item_detailurl;
+                    $item_detailurl = $__mod->create_url($id, 'detail', $detailspage, array('prefix' => $onerow->key_encoded), false, false, $prettyurl);
+                    //needs fix
+                    //$onerow->detail_link = $item_detailurl;
                 }
                 
                 $entryarray[] = $onerow;

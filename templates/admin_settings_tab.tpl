@@ -58,6 +58,14 @@
         <p class="pagetext">{$mod->Lang('prompt_summarypage')}:</p>
         <p class="pageinput">{$input_summarypage}</p>
     </div> 	
+  	<div class="pageoverflow">
+        <p class="pagetext">{$mod->Lang('prompt_itemsdisplayed')}:</p>
+
+        {$opts=[10=>10,25=>25,50=>50,100=>100,1000=>1000]}
+      <select name="{$actionid}settings_input[itemsdisplayed]">
+        {html_options options=$opts selected=$mod->GetOptionValue("itemsdisplayed")}
+      </select>
+    </div> 	
 </fieldset>
 
 <div class="pageoverflow">

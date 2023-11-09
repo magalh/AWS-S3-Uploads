@@ -6,26 +6,45 @@ $lang['admin_save'] = "Save";
 $lang['access_key'] = 'Access keys';
 $lang['allowed'] = 'Allowed';
 $lang['author_label'] = 'Posted by:';
-$lang['choose_file'] = 'Choose file';
 $lang['access_region'] = 'Region';
+$lang['access_key'] = 'AWS Access Key ID';
+$lang['access_secret_key'] = 'AWS Secret Access Key';
 #B
 $lang['bucket_name'] = 'Bucket Name';
 #C
 $lang['category_label'] = 'Category:';
 $lang['cancel'] = 'Cancel';
+$lang['choose_file'] = 'Choose file';
 $lang['config'] = 'AWS S3 Module Configuration';
+$lang['custom_url'] = 'Custom URL';
+$lang['captcha_title'] = 'Enter the text displayed in this image';
 #D
 $lang['date'] = 'Date';
 $lang['delete'] = 'Delete';
 $lang['default_options'] = 'Module defaults';
+$lang['deleteselected'] = 'Delete the selected files/directories';
+$lang['deleteselectedcancelled'] = 'Deletion of selected files canceled';
+$lang['deletesuccess'] = 'Items successfully deleted';
+$lang['desc_filemanager_settings'] = 'Edit File Manager Settings';
+$lang['dirchmodfailmulti'] = 'Changing permissions on the directory failed, some of it\'s content may have gotten new permissions, though.';
+$lang['dirchmodfailure'] = 'Changing permissions of the directory failed';
+$lang['dirchmodsuccess'] = 'The directory successfully got new permissions';
+$lang['dirchmodsuccessmulti'] = 'Changing permissions on the directory and it\'s content was successful';
+$lang['direxists'] = 'The directory already exists';
+$lang['dirnotemptyconfirm'] = 'The directory isn\'t empty! Do you really want to delete it, including all content and subdirectories?';
+$lang['dirtreedeletecancelled'] = 'Deletion of directory canceled';
+$lang['dirtreedeletefail'] = 'An error occurred when deleting this directory. Some of the contents may have been deleted, however.';
+$lang['dirtreedeletesuccess'] = 'The directory including content was successfully deleted.';
 #E
 $lang['error'] = 'Error';
+$lang['error_captchamismatch'] = 'Captch text entered did not match the image displayed';
 $lang['error_setup'] = 'Please complete the AWS SDK Module Setup <a href="%s">here</a>';
 $lang['expiry_interval'] = 'Remove cache files that are older than the specified number of minutes';
 #F
-$lang['friendlyname'] = 'AWSS3 Module';
 $lang['file'] = 'File';
 $lang['fielddef_allow_help'] = 'Specify a comma separated list of file extensions that are allowed. For example: pdf,gif,jpeg,jpg (keep lowercase)';
+$lang['firstpage'] = '&lt;&lt;';
+$lang['friendlyname'] = 'AWSS3 Module';
 #G
 $lang['getstarted'] = 'Get Started with AWS S3 Module';
 #H
@@ -68,6 +87,7 @@ $lang['help_bucket_name'] = 'This module will not create any S3 buckets. You hav
 $lang['help_use_custom_url'] = 'Enable this if you want to use custom URL';
 $lang['help_custom_url'] = 'Custom URL can be a Cloudfront URL or if any url mapped on your bucket.';
 #L
+$lang['last_refreshed'] = 'Last refreshed';
 $lang['logfilepath'] = 'Please provide your full Log File path, including filename';
 $lang['line'] = 'Line';
 $lang['label_size'] = 'Size';
@@ -75,10 +95,13 @@ $lang['label_url_original'] = 'Original Url';
 $lang['label_url'] = 'Url';
 $lang['label_url_presigned'] = 'Presigned Url';
 $lang['label_mime'] = 'Mime';
+$lang['lastpage'] = '&gt;&gt;';
 #M
 $lang['message'] = 'Message';
 $lang['msg_vrfy_integrityverified'] = 'Connection Established';
 $lang['msg_vrfy_noconn'] = 'Connection Not Established';
+#N
+$lang['nextpage'] = '&gt;';
 #P
 $lang['page'] = 'Page';
 $lang['prompt_email'] = 'Email Address';
@@ -92,27 +115,22 @@ $lang['prompt_use_custom_url'] = 'Use Custom URL';
 $lang['prompt_custom_url'] = 'Custom URL';
 $lang['prompt_detailpage'] = 'Detail page';
 $lang['prompt_summarypage'] = 'Summary page';
-$lang['firstpage'] = '&lt;&lt;';
+$lang['prompt_itemsdisplayed'] = 'Number of items to display in the admin page';
+$lang['prompt_go'] = 'Go';
 $lang['prevpage'] = '&lt;';
-$lang['nextpage'] = '&gt;';
-$lang['lastpage'] = '&gt;&gt;';
 $lang['prompt_of'] = 'of';
 $lang['prompt_page'] = 'Page';
 $lang['prompt_pagelimit'] = 'Page Limit';
-
 #R
 $lang['reviews'] = 'Reviews';
 $lang['region'] = 'Region';
 $lang['returntomodule'] = 'Return to Module';
 $lang['required'] = 'Required';
-
+$lang['refreshsuccess'] = 'Items successfully refreshed';
 #S
 $lang['submit'] = 'Submit';
-$lang['access_key'] = 'AWS Access Key ID';
-$lang['access_secret_key'] = 'AWS Secret Access Key';
-$lang['bucket_name'] = 'Bucket Name';
-$lang['custom_url'] = 'Custom URL';
 $lang['sorry_nofiles'] = 'Sorry, we could not find any files';
+$lang['successful_upload'] = 'Your file was successfully uploaded.  In the end, the filename we used was %s';
 #T
 $lang['type'] = 'Type';
 $lang['type_AWSS3'] = 'AWSS3';
@@ -121,6 +139,8 @@ $lang['type_summary'] = 'Summary';
 $lang['type_Reviews'] = 'Reviews';
 $lang['title_changedir'] = 'Change working directory to this directory';
 $lang['title_changeupdir'] = 'Go to the parent folder';
+$lang['title_dropzone'] = 'You can drop files here from your file manager to automatically begin uploading';
+$lang['title_refresh'] = 'Refresh Cached Data';
 #U
 $lang['upload'] = 'Upload';
 #V
@@ -129,7 +149,4 @@ $lang['VALIDATION_ERROR'] = 'Please provide your Log File path';
 $lang['warn_delete_directory'] = 'A folder is selected for deletion, all objects in the folder will be deleted, and any new objects added while the delete action is in progress might also be deleted. If an object is selected for deletion, any new objects with the same name that are uploaded before the delete action is completed will also be deleted.';
 $lang['warn_file_not_allowed'] = 'Filetype not allowed';
 $lang['warn_file_missing'] = 'Select a file to upload';
-$lang['successful_upload'] = 'Your file was successfully uploaded.  In the end, the filename we used was %s';
-$lang['captcha_title'] = 'Enter the text displayed in this image';
-$lang['error_captchamismatch'] = 'Captch text entered did not match the image displayed';
 ?>

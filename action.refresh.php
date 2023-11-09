@@ -24,50 +24,23 @@
 # See the GNU General Public License for more details.
 #---------------------------------------------------------------------------------------------------
 
-if( !defined('CMS_VERSION') ) exit;
+namespace AWSS3;
+if (!function_exists("cmsms")) exit;
+if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
-use \AWSSDK\aws_sdk_utils;
-use \AWSS3\aws_s3_utils;
+$prefix = $params['prefix']?$params['prefix']:'';
+$bucket_id = $this->GetOptionValue('bucket_name');
 
-	// pass data to head section.
-	$template_head = $this->_output_frontend_css();
-	$templatetitle = '<!-- AWSS3 -->
-	';
-	if (!empty($template_head))
-			$this->FrontEndCSS .= $templatetitle . $template_head . '
-	';
+$qparms = array();
+$qparms['bucket'] = $bucket_id;
+$qparms['prefix'] = $prefix;
+$qparms['returnid'] = $returnid;
+$smarty->assign('qparms',$qparms);
 
-	$debug = isset($params['debug']);
-	$template = null;
-	if (isset($params['detailtemplate'])) {
-		$template = trim($params['detailtemplate']);
-	}
-	else {
-		$tpl = CmsLayoutTemplate::load_dflt_by_type('AWSS3::detail');
-		if( !is_object($tpl) ) {
-			audit('',$this->GetName(),'No default detail template found');
-			return;
-		}
-		$template = $tpl->get_name();
-	}
+$json_file_Path = $this->getCacheFile($qparms);
+$data = bucket_query::cache_query($qparms,$json_file_Path);
+$return_params = ['prefix'=>$prefix,'__activetab'=>$bucket_id,"fmmessage"=>"refreshsuccess"];
+$this->Redirect($id,"defaultadmin",$returnid,$return_params);
 
-	try {
-		if( !isset($params['prefix']) ) {
-			throw new \AWSSDK\Exception('Upload id not specified',500);
-		}
-	} catch (\AWSSDK\Exception $e) {
-		$this->_DisplayMessage($e->getText(),$e->getType());
-	}
-
-	$key = urldecode($params['prefix']);
-	$entry = aws_s3_utils::get_file_info($key);
-
-    $tpl_ob = $smarty->CreateTemplate($this->GetTemplateResource($template),null,null,$smarty);
-    $tpl_ob->assign('entry',$entry);
-	$tpl_ob->assign('settings',$this->GetSettingsValues());
-    $tpl_ob->display();
-
-	if($debug) 
-	$tpl_ob->display('string:<pre>{$entry|@print_r}</pre>');
 
 ?>

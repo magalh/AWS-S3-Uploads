@@ -1,22 +1,17 @@
 <?php
-#BEGIN_LICENSE
-#-------------------------------------------------------------------------
+#---------------------------------------------------------------------------------------------------
 # Module: AWSS3
-# Authors: Magal Hezi, with CMS Made Simple Foundation able to assign new administrators.
-# Copyright: (C) 2023 Magal Hezi, magal@pixelsolutions.biz
-# AWSS3 is An addon module for CMS Made Simple to provide the ability to access and upload
-# objects to Amazon (AWS) S3 Buckets.
-#
-#-------------------------------------------------------------------------
-# CMS - CMS Made Simple is (c) 2005 by Ted Kulp (wishy@cmsmadesimple.org)
-# This projects homepage is: http://www.cmsmadesimple.org
-#
-#-------------------------------------------------------------------------
-#
-# This program is free software; you can redistribute it and/or modify
-# it under the terms of the GNU General Public License as published by
-# the Free Software Foundation; either version 2 of the License, or
-# (at your option) any later version.
+# Authors: Magal Hezi, with CMS Made Simple Foundation.
+# Copyright: (C) 2023 Magal Hezi, h_magal@hotmail.com
+# Licence: GNU General Public License version 3. See http://www.gnu.org/licenses/  
+#---------------------------------------------------------------------------------------------------
+# CMS Made Simple(TM) is (c) CMS Made Simple Foundation 2004-2020 (info@cmsmadesimple.org)
+# Project's homepage is: http://www.cmsmadesimple.org
+# Module's homepage is: http://dev.cmsmadesimple.org/projects/AWSS3
+#---------------------------------------------------------------------------------------------------
+# This program is free software; you can redistribute it and/or modify it under the terms of the GNU
+# General Public License as published by the Free Software Foundation; either version 3 of the 
+# License, or (at your option) any later version.
 #
 # However, as a special exception to the GPL, this software is distributed
 # as an addon module to CMS Made Simple.  You may not use this software
@@ -24,17 +19,11 @@
 # Made simple that does not indicate clearly and obviously in its admin
 # section that the site was built with CMS Made simple.
 #
-# This program is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-# GNU General Public License for more details.
-# You should have received a copy of the GNU General Public License
-# along with this program; if not, write to the Free Software
-# Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-# Or read it online: http://www.gnu.org/licenses/licenses.html#GPL
-#
-#-------------------------------------------------------------------------
-#END_LICENSE
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+# See the GNU General Public License for more details.
+#---------------------------------------------------------------------------------------------------
+
 if( !defined('CMS_VERSION') ) exit;
 
 use \AWSS3\aws_s3_utils;
@@ -82,7 +71,7 @@ use \AWSS3\encrypt;
     if( empty($detailpage) || $detailpage == -1 ) { $detailpage = $returnid; }
 
     $debug = isset($params['debug']);
-    $template = 'orig_summary_template.tpl';
+    //$template = 'orig_summary_template.tpl';
     $tpl_ob = $smarty->CreateTemplate($this->GetTemplateResource($template),null,null,$smarty);
 
     $pagelimit = 10;
@@ -244,7 +233,6 @@ use \AWSS3\encrypt;
     $tpl_ob->display();
 
     if($debug) 
-    //print_r($qparms);
 	$tpl_ob->display('string:<pre>{$qparms|@print_r}</pre>');
 
 ?>

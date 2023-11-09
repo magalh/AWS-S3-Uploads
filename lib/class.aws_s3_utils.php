@@ -1,4 +1,29 @@
 <?php
+#---------------------------------------------------------------------------------------------------
+# Module: AWSS3
+# Authors: Magal Hezi, with CMS Made Simple Foundation.
+# Copyright: (C) 2023 Magal Hezi, h_magal@hotmail.com
+# Licence: GNU General Public License version 3. See http://www.gnu.org/licenses/  
+#---------------------------------------------------------------------------------------------------
+# CMS Made Simple(TM) is (c) CMS Made Simple Foundation 2004-2020 (info@cmsmadesimple.org)
+# Project's homepage is: http://www.cmsmadesimple.org
+# Module's homepage is: http://dev.cmsmadesimple.org/projects/AWSS3
+#---------------------------------------------------------------------------------------------------
+# This program is free software; you can redistribute it and/or modify it under the terms of the GNU
+# General Public License as published by the Free Software Foundation; either version 3 of the 
+# License, or (at your option) any later version.
+#
+# However, as a special exception to the GPL, this software is distributed
+# as an addon module to CMS Made Simple.  You may not use this software
+# in any Non GPL version of CMS Made simple, or in any version of CMS
+# Made simple that does not indicate clearly and obviously in its admin
+# section that the site was built with CMS Made simple.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY WARRANTY; 
+# without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
+# See the GNU General Public License for more details.
+#---------------------------------------------------------------------------------------------------
+
 namespace AWSS3;
 
 use \Aws\S3\S3Client;  
@@ -13,6 +38,8 @@ final class aws_s3_utils
     private $s3Client = null;
     private static $__mod;
     private static $__sdk;
+
+    public static $property = "hello world";
 
     public function __construct (){
 
@@ -112,13 +139,13 @@ final class aws_s3_utils
         return $s3Client;
     }
 
-    public function upload_file($bucket_id,$file_name,$file_temp_src){
+    public function upload_file($file_name,$file_temp_src){
 
         $this->s3Client = $this::getS3Client();
         $ret = array();
         try { 
             $result = $this->s3Client->putObject([ 
-                'Bucket' => $bucket_id, 
+                'Bucket' => $this->bucket_name, 
                 'Key'    => $file_name,
                 'SourceFile' => $file_temp_src,
                 'Tagging' => "Module=CMSMS::AWSS3"
@@ -212,6 +239,7 @@ final class aws_s3_utils
             $onerow->url = $mod->GetPrettyUrl($prefix);
             $onerow->url_presigned = self::presignedUrl($prefix);
             $onerow->url = str_replace('\\','/',$onerow->url); // windoze both sucks, and blows.
+            if(self::is_file_image($onerow->name)) $onerow->isimage = true;
 
             return $onerow;
 
@@ -225,8 +253,6 @@ final class aws_s3_utils
         }
 
     }
-
-    
 
     public static function deleteObject($bucket,$keyname){
         $s3 = self::getS3Client();
@@ -364,187 +390,42 @@ final class aws_s3_utils
         }
     }
 
-    public static function get_file_list($bucket_id,$prefix=null){
-
-        $mod = self::get_mod();
-        $result=array();
-        $config = \cms_config::get_instance();
-
-        $s3Client = self::getS3Client();
-
-        try {
-            $contents = $s3Client->listObjectsV2([
-                'Bucket' => $bucket_id,
-                'Prefix' => $prefix,
-                'Delimiter' => '/'
-            ]);
-
-        } catch (AwsException $e) {
-            // Handle the error
-            if($e->getStatusCode() == 404){
-                $error_message = $bucket_id." ".$e->getAwsErrorMessage();
-            } else {
-                $error_message = $e->getMessage();
+    public static function sumBytes($items) {
+        $sum = 0;
+        foreach ($items as $item) {
+            if (isset($item->size)) {
+                $sum += $item->size;
             }
-
-            $smarty = cmsms()->GetSmarty();
-            $smarty->assign('error',1);
-            $smarty->assign('message',$error_message);
         }
-
-        //print_r($contents['Contents']);
-
-        if(isset($prefix) && $prefix!=''){
-
-            $info=array();
-            $info['name']= '..';
-            $info['dir'] = true;
-            $info['mime'] = 'directory';
-            $info['ext']='';
-            $result[]=$info;
-
-        }
-
-        //Directories
-        foreach ($contents['CommonPrefixes'] as $dir) {
-
-            $info=array();
-            $info['name']=$dir['Prefix'];
-            $info['dir'] = true;
-            $info['mime'] = 'directory';
-            $info['ext']='';
-
-            $result[]=$info;
-
-        }
-        //Files 
-        foreach ($contents['Contents'] as $content) {
-
-            $cmd = $s3Client->headObject([
-                'Bucket' => $bucket_id,
-                'Key' => $content['Key']
-            ]);
-
-            $info=array();
-            $info['name']=$content['Key'];
-            $info['dir'] = FALSE;
-            $info['image'] = FALSE;
-            $info['archive'] = FALSE;
-            $info['mime'] = $cmd['ContentType'];
-
-                if (is_dir($fullname)) {
-                    $info['dir']=true;
-                    $info['ext']='';
-                } else {
-                    $info['size']=self::formatBytes($content['Size']);
-                    $info['date']=strtotime( $content['LastModified'] );
-                    $info['url']= "https://".$mod->GetPreference('bucket_name').".s3.".$mod->GetPreference('access_region').".amazonaws.com/".$content['Key'];
-                    //$info['presignedUrl']=self::presignedUrl($bucket_id,$content['Key'],$s3Client);
-                    //$info['url']=$s3Client->getObjectUrl($bucket_id,$content['Key']);
-                    $info['url'] = str_replace('\\','/',$info['url']); // windoze both sucks, and blows.
-                    $explodedfile=explode('.', $content['Key']); 
-                    $info['ext']=array_pop($explodedfile);
-                }
-            
-            // test for archive
-            $info['archive'] = '';
-            // test for image
-            $info['image'] = '';
-            $info['fileowner']='N/A';
-            $info['writable']='';
-
-            $result[]=$info;
-
-
-            }
-
-        return $result;
-    }
-
-    public static function get_files($options)
-    {
-
-        $mod = self::get_mod();
-        $result=array();
-        $s3Client = self::getS3Client();
-
-        try {
-
-            $contents = $s3Client->listObjectsV2($options);
-
-            if(isset($options['Prefix']) && $options['Prefix']!==''){
-
-                $onerow = new \stdClass();
-                $onerow->name = '..';
-                $onerow->dir = true;
-                $onerow->mime = 'directory';
-                $onerow->ext = '';
-                $result[]=$onerow;
     
-            }
-    
-            //Directories
-            foreach ($contents['CommonPrefixes'] as $dir) {
-    
-                $onerow = new \stdClass();
-                $onerow->name = $dir['Prefix'];
-                $onerow->dir = true;
-                $onerow->mime = 'directory';
-                $onerow->ext = '';
-    
-                $result[]=$onerow;
-    
-            }
-
-            foreach ($contents['Contents'] as $content) {
-
-                $onerow = new \stdClass();
-    
-                $cmd = $s3Client->headObject([
-                    'Bucket' => $options['Bucket'],
-                    'Key' => $content['Key']
-                ]);
-    
-                $onerow->name = $content['Key'];
-                $onerow->dir = FALSE;
-                $onerow->image = FALSE;
-                $onerow->archive = FALSE;
-                $onerow->mime = $cmd['ContentType'];
-    
-                $onerow->size=self::formatBytes($content['Size']);
-                $onerow->date=strtotime( $content['LastModified'] );
-                $onerow->url= "https://".$mod->GetPreference('bucket_name').".s3.".$mod->GetPreference('access_region').".amazonaws.com/".$content['Key'];
-                $onerow->iconlink = $mod->CreatePrettyLink($content['Key']);
-                //$onerow->presignedUrl']=self::presignedUrl($bucket_id,$content['Key'],$s3Client);
-                //$onerow->url']=$s3Client->getObjectUrl($bucket_id,$content['Key']);
-                $onerow->url = str_replace('\\','/',$onerow->url); // windoze both sucks, and blows.
-                $explodedfile=explode('.', $content['Key']); $onerow->ext=array_pop($explodedfile);
-                
-    
-                $result[]=$onerow;
-    
-            }
-
-            return $result;
-
-        } catch (\Exception $e) {
-            $mod->_DisplayMessage($e->getMessage());
-            return;
-            //throw new \Exception($error_message);
-        }
-
-        
-        
+        return self::formatBytes($sum);
     }
 
     public static function is_file_acceptable( $file_type )
-  {
-      $mod = self::get_mod();
-      $file_type = strtolower($file_type);
-      $allowTypes = explode(',',$mod->GetPreference('allowed'));
-      if(!in_array($file_type, $allowTypes)) return FALSE;
-      return TRUE;
-  }
+    {
+        $mod = self::get_mod();
+        $file_type = strtolower($file_type);
+        $allowTypes = explode(',',$mod->GetPreference('allowed'));
+        if(!in_array($file_type, $allowTypes)) return FALSE;
+        return TRUE;
+    }
+
+    public static function is_file_image( $src_file_name )
+    {
+        $supported_image = array(
+            'gif',
+            'jpg',
+            'jpeg',
+            'png'
+        );
+        
+        $ext = strtolower(pathinfo($src_file_name, PATHINFO_EXTENSION));
+        if (!in_array($ext, $supported_image)) {
+            return false;
+        }
+
+        return true;
+    }
 
   public function check_iam_policy() {
         $smarty = cmsms()->GetSmarty();
@@ -695,6 +576,19 @@ final class aws_s3_utils
         // Merge the items to the beginning of the array
         $array = array_merge($itemsToMove, $array);
     }
+
+    public static function getUpDir($myArray){
+
+        $combinedString = '';
+
+        for ($i = 0; $i < count($myArray) - 1; $i++) {
+            $combinedString .= $myArray[$i]->name;
+            $combinedString .= '/'; // Add a separator (e.g., comma and space)
+        }
+
+        return $combinedString;
+
+    }
   
 
     protected function catchWarning($errno, $errstr, $errfile, $errline)
@@ -719,6 +613,17 @@ final class aws_s3_utils
             echo '</pre>';
         }
     }
+
+    static final public function loader($params, $smarty)
+    {
+        if(empty($params["format"])) {
+            $format = "%b %e, %Y";
+        } else {
+            $format = $params["format"];
+        }
+        return strftime($format,time());
+    }
+
 
 }
 ?>

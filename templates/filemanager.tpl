@@ -28,11 +28,9 @@ function enable_action_buttons() {
     $('button.filebtn').attr('disabled','disabled');
     if (files == 0 && dirs == 0) {
         // nothing selected, enable anything with select_none
-        enable_button('#btn_newdir');
+        enable_button('#btn_refresh');
     } else if (files == 1) {
         // 1 selected, enable anything with select_one
-        enable_button('#btn_rename');
-        enable_button('#btn_move');
         enable_button('#btn_delete');
 
         if (dirs == 0) enable_button('#btn_copy');
@@ -112,8 +110,8 @@ $(document).ready(function () {
 // ]]>
 </script>
 
-<h3>{$mod_fm->Lang('currentpath')}
-   <span class="pathselector">
+<h3>{$FileManager->Lang('currentpath')}
+   <span class="pathselector">{$up_home} / 
    {foreach $path_parts as $part}
      {if !empty($part->url)}
        <a href="{$part->url}">{$part->name}</a>
@@ -140,14 +138,15 @@ $(document).ready(function () {
 <div>
   {$formstart}
 <div>
-	<fieldset>
-        {*filebtn id='btn_newdir' iname="{$actionid}fileactionnewdir" icon='ui-icon-circle-plus' text=$mod_fm->Lang('newdir') title=$mod_fm->Lang('title_newdir')*}
-        {filebtn id='btn_view' iname="{$actionid}fileactionview" icon='ui-icon-circle-zoomin' text=$mod_fm->Lang('view') title=$mod_fm->Lang('title_view')}
-		{filebtn id='btn_delete' iname="{$actionid}fileactiondelete" icon='ui-icon-trash' text=$mod_fm->Lang('delete') title=$mod_fm->Lang('title_delete')}
+	<fieldset id="navButtons">
+        {*filebtn id='btn_newdir' iname="{$actionid}fileactionnewdir" icon='ui-icon-circle-plus' text=$FileManager->Lang('newdir') title=$FileManager->Lang('title_newdir')*}
+    {filebtn id='btn_view' iname="{$actionid}fileactionview" icon='ui-icon-circle-zoomin' text=$FileManager->Lang('view') title=$FileManager->Lang('title_view')}
+		{filebtn id='btn_delete' iname="{$actionid}fileactiondelete" icon='ui-icon-trash' text=$FileManager->Lang('delete') title=$FileManager->Lang('title_delete')}
+    {filebtn id='btn_refresh' iname="{$actionid}fileactionrefresh" icon='ui-icon-refresh' text=$FileManager->Lang('refresh') title=$FileManager->Lang('title_refresh')}
+    &nbsp;{$mod->Lang('last_refreshed')}&nbsp;{$lastupdate|localedate_format:'j %h Y H:i:s'}
 	</fieldset>
 </div>
 {$hiddenpath}
-{$bucket_id}
 {/if}
 
 <div id="filesarea">
@@ -155,31 +154,30 @@ $(document).ready(function () {
 		<thead>
 			<tr>
 				<th class="pageicon">&nbsp;</th>
-				<th>{$filenametext}</th>
-				<th>{$mod_fm->Lang('mimetype')}</th>
-				<th class="pageicon" title="{$mod_fm->Lang('title_col_filesize')}" style="text-align:right;">{$filesizetext}</th>
-				<th class="pageicon" title="{$mod_fm->Lang('title_col_filedate')}">{$filedatetext}</th>
+				<th>{$FileManager->Lang("filename")}</th>
+				<th>{$FileManager->Lang('mimetype')}</th>
+				<th class="pageicon" title="{$FileManager->Lang('title_col_filesize')}" style="text-align:right;">{$FileManager->Lang("filesize")}</th>
+				<th class="pageicon" title="{$FileManager->Lang('title_col_filedate')}">{$FileManager->Lang("filedate")}</th>
                 <th class="pageicon"></th>
 				<th class="pageicon">
-					<input type="checkbox" name="tagall" value="tagall" id="tagall" title="{$mod_fm->Lang('title_tagall')}"/>
+					<input type="checkbox" name="tagall" value="tagall" id="tagall" title="{$FileManager->Lang('title_tagall')}"/>
 				</th>
 			</tr>
 		</thead>
 		<tbody>
-		{foreach from=$files item=file}
+		{foreach from=$items item=file}
 			{cycle values="row1,row2" assign=rowclass}
-			{$thedate=str_replace(' ','&nbsp;',(string)$file->filedate|cms_date_format)}{$thedate=str_replace('-','&minus;',(string)$thedate)}
 			<tr class="{$rowclass}">
-				<td valign="middle">{if isset($file->thumbnail) && $file->thumbnail!=''}{$file->thumbnail}{else}{$file->iconlink}{/if}</td>
-				<td class="clickable" valign="middle">{$file->txtlink}</td>
+				<td valign="middle">{$file->icon_link}</td>
+				<td class="clickable" valign="middle">{$file->url_link}</td>
 				<td class="clickable" valign="middle">{$file->mime}</td>
-				<td class="clickable" style="padding-right:8px;white-space:pre;text-align:right;" valign="middle">{$file->filesize}</td>
-                <td class="clickable" style="padding-right:8px;white-space:pre;" valign="middle">{$thedate}</td>
+				<td class="clickable" style="padding-right:8px;white-space:pre;text-align:right;" valign="middle">{s3_utils::formatBytes($file->size)}</td>
+                <td class="clickable" style="padding-right:8px;white-space:pre;" valign="middle">{$file->date|cms_date_format}</td>
 				<td>{$file->openlink} {*admin_icon icon='view.gif' alt="Open"*}</td>
 				<td>
 				{if !isset($file->noCheckbox)}
-					<label for="x_{$file->urlname}" style="display: none;">{$mod_fm->Lang('toggle')}</label>
-					<input type="checkbox" title="{$mod_fm->Lang('toggle')}" id="x_{$file->name}" name="{$actionid}selall[]" value="{$file->name}" class="fileselect {implode(' ',$file->type)}" {if isset($file->checked)}checked="checked"{/if}/>
+					<label for="x_{$file->urlname}" style="display: none;">{$FileManager->Lang('toggle')}</label>
+					<input type="checkbox" title="{$FileManager->Lang('toggle')}" id="x_{$file->name}" name="{$actionid}selall[]" value="{$file->key}" class="fileselect {implode(' ',$file->type)}" {if isset($file->checked)}checked="checked"{/if}/>
 				{/if}
 				</td>
 			</tr>
@@ -187,15 +185,30 @@ $(document).ready(function () {
 		</tbody>
 		<tfoot>
 			<tr>
-				<td>&nbsp;</td>
-				<td colspan="7">{$countstext}</td>
+				<td colspan="6">&nbsp;{$countstext}</td>
 			</tr>
 		</tfoot>
 	</table>
 </div>
-
 {if !isset($ajax)}
 	{*{$actiondropdown}{$targetdir}{$okinput}*}
 	{$formend}
 </div>
 {/if}
+
+<div class="row c_full">
+  {if $itemcount > 0 && $pagecount > 1}
+    <div class="pageoptions grid_12" style="text-align: right;">
+      {form_start}
+      {$mod->Lang('prompt_page')}&nbsp;
+      <select name="{$actionid}pagenumber">
+        {cms_pageoptions numpages=$pagecount curpage=$pagenumber}
+      </select>&nbsp;
+      <input type="submit" name="{$actionid}paginate" value="{$mod->Lang('prompt_go')}"/>
+      <input type="hidden" name="{$actionid}prefix" value="{$path}"/>
+      {form_end}
+    </div>
+  {/if}
+</div>{* .row *}
+
+{*get_template_vars*}
