@@ -55,7 +55,7 @@ class AWSS3 extends CMSModule
         $sdk = cms_utils::get_module( 'AWSSDK' );
         $fn = $this->GetModulePath().'/lib/class.aws_s3_utils.php'; require_once($fn);
         $fn = $sdk->GetModulePath().'/lib/class.aws_sdk_utils.php'; require_once($fn);
-
+        
         $smarty->registerClass('s3_utils','\AWSS3\aws_s3_utils');
         $smarty->registerClass('sdk_utils','\AWSSDK\aws_sdk_utils');
         
@@ -69,10 +69,9 @@ class AWSS3 extends CMSModule
 
   public function autoload($classname) : bool
   {
-    
-    $sdk_mod = cms_utils::get_module( 'AWSSDK' );
-      $path = $sdk_mod->GetModulePath() . '/lib';
-      require_once $path.'/SDK/aws-autoloader.php';
+      $sdk_mod = cms_utils::get_module( 'AWSSDK' );
+      $fn = $sdk_mod->GetModulePath().'/lib/SDK/aws-autoloader.php'; require_once($fn);
+      $fn = $this->GetModulePath().'/lib/SDK/aws-autoloader.php'; require_once($fn);
       return TRUE;
   }
 	
