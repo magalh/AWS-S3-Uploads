@@ -26,9 +26,6 @@
 
 if( !defined('CMS_VERSION') ) exit;
 
-use \AWSSDK\aws_sdk_utils;
-use \AWSS3\aws_s3_utils;
-
 	// pass data to head section.
 	$template_head = $this->_output_frontend_css();
 	$templatetitle = '<!-- AWSS3 -->
@@ -60,7 +57,7 @@ use \AWSS3\aws_s3_utils;
 	}
 
 	$key = urldecode($params['prefix']);
-	$entry = aws_s3_utils::get_file_info($key);
+	$entry = \AWSS3\utils::get_file_info($key);
 
     $tpl_ob = $smarty->CreateTemplate($this->GetTemplateResource($template),null,null,$smarty);
     $tpl_ob->assign('entry',$entry);

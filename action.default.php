@@ -26,9 +26,7 @@
 
 if( !defined('CMS_VERSION') ) exit;
 
-use \AWSS3\aws_s3_utils;
 use \AWSS3\bucket_query;
-use \AWSS3\encrypt;
 
     $mod_fm = \cms_utils::get_module('FileManager');
 
@@ -147,7 +145,7 @@ use \AWSS3\encrypt;
         } else {
 
             $json = file_get_contents($json_file_Path);
-            $tmp = encrypt::decrypt($json);
+            $tmp = \AWSSDK\encrypt::decrypt($json);
             $data = json_decode($tmp, false);
         
             $enddate  = strtotime(sprintf("+%d minutes", $nminutes), $data->date);

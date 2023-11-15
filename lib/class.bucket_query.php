@@ -26,9 +26,9 @@
 
 namespace AWSS3;
 
-use AWSS3\aws_s3_utils;
+use AWSS3\utils;
 use AWSS3\helpers;
-use AWSS3\encrypt;
+use AWSSDK\encrypt;
 
 final class bucket_query
 {
@@ -46,7 +46,7 @@ final class bucket_query
     public function __construct($params = array())
     {
         //print_r($params);
-        $this->s3Client = aws_s3_utils::getS3Client();
+        $this->s3Client = utils::getS3Client();
 
         foreach( $params as $key => $val ) {
             if( !array_key_exists($key,$this->_data) ) continue;
@@ -136,14 +136,14 @@ final class bucket_query
                 $listing['items'] = array_merge($listing['items'], $this->FetchAll($result));
                 $items++;
             }
-            aws_s3_utils::sortByProperty($listing['items'], 'name');
+            utils::sortByProperty($listing['items'], 'name');
 
             $indicesToMove = [];
             for ($i = 0; $i < count($listing['items']); $i++) {
                 if($listing['items'][$i]->dir == true)$indicesToMove[] = $i;
             }
             if (count($indicesToMove) > 0) {
-                aws_s3_utils::moveItemsToBeginningByIndex($listing['items'], $indicesToMove);
+                utils::moveItemsToBeginningByIndex($listing['items'], $indicesToMove);
             }
             $listing['total'] = count($listing['items']);  
             

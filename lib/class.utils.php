@@ -32,7 +32,7 @@ use \Aws\Exception\UnresolvedEndpointException;
 use \AWSSDK\Exception;
 use \AWSS3\helpers;
 
-final class aws_s3_utils
+final class utils
 {
 
     private $s3Client = null;

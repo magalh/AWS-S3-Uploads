@@ -26,6 +26,8 @@
 
 namespace AWSS3;
 
+use \AWSSDK\encrypt;
+
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
 $bucket_id = $this->GetOptionValue('bucket_name');
@@ -85,9 +87,9 @@ if($nminutes == 0) {
       $data = json_decode($tmp, false);
   
       $enddate  = strtotime(sprintf("+%d minutes", $nminutes), $data->date);
-      if (time() >= $enddate) {
+      //if (time() >= $enddate) {
           $data = bucket_query::cache_query($qparms,$json_file_Path);
-      }
+      //}
 
   }
 }
@@ -120,7 +122,7 @@ $smarty->assign('up_home',$up_home);
 
 $parts_counter = count($path_parts);
 if( $parts_counter >= 1 ) {
-  $updir = aws_s3_utils::getUpDir($path_parts);
+  $updir = utils::getUpDir($path_parts);
   $icon = $FileManager->GetModuleURLPath().'/icons/themes/default/actions/dir_up.gif';
   $img_tag = '<img src="'.$icon.'" width="32" title="'.$this->Lang('title_changeupdir').'"/>';
   if($parts_counter > 1){
@@ -150,7 +152,7 @@ $smarty->assign('itemcount', $countfiles);
 $smarty->assign('hiddenpath', $this->CreateInputHidden($id, "prefix", $params["prefix"]));
 $smarty->assign('formstart', $this->CreateFormStart($id, 'fileaction', $returnid));
 // roundown
-$totalsize = aws_s3_utils::sumBytes($data->items);
+$totalsize = utils::sumBytes($data->items);
 $counts = $totalsize . " " . $FileManager->Lang("in") . " " . $countfiles . " ";
 if ($countfiles == 1) $counts.=$FileManager->Lang("file"); else $counts.=$FileManager->Lang("files");
 $counts.=" " . $FileManager->Lang("and") . " " . $countdirs . " ";
@@ -180,7 +182,7 @@ if ($startelement < 0 || $startelement > $endelement) {
     $onerow = new \stdClass();
     $onerow->url = $up_dirurl;
     $onerow->url_link = $up_dirlink;
-    $onerow->icon_link = $up_diriconlink;
+    $onerow->icon_link = $onerow->presigned_icon_link = $up_diriconlink;
     $onerow->type = array('dir');
     $onerow->noCheckbox = 1;
     $entryarray[]= $onerow;
@@ -194,7 +196,7 @@ if ($startelement < 0 || $startelement > $endelement) {
           }
           $onerow->url = $this->create_url('m1_','defaultadmin','',$sendtodetail);
           $onerow->url_link = "<a href='" . $onerow->url . "' class=\"dirlink\" title=\"{$FileManager->Lang('title_changedir')}\">" . $onerow->name . "</a>";
-          $onerow->icon_link = "<a href='" . $onerow->url . "' class=\"dirlink\" title=\"{$FileManager->Lang('title_changedir')}\">".$row->icon."</a>";
+          $onerow->icon_link = $onerow->presigned_icon_link = "<a href='" . $onerow->url . "' class=\"dirlink\" title=\"{$FileManager->Lang('title_changedir')}\">".$row->icon."</a>";
       }
       $entryarray[]= $onerow;
   }
@@ -211,5 +213,7 @@ $smarty->assign('FileManager',$FileManager);
 $smarty->assign('items', $entryarray);
 
 echo $this->ProcessTemplate('filemanager.tpl');
+
+
 
 ?>

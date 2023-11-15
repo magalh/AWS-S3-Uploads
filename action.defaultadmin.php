@@ -27,15 +27,15 @@
 if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission(AWSS3::MANAGE_PERM) ) return;
 
-use \AWSSDK\aws_sdk_utils;
-use \AWSS3\aws_s3_utils;
 use \AWSS3\helpers;
 
-$sdk_utils = new aws_sdk_utils();
-$s3_utils = new aws_s3_utils();
+$sdk = cms_utils::get_module( 'AWSSDK' );
+$mod_fm = \cms_utils::get_module('FileManager');
+
+$sdk_utils = $sdk->getUtils();
+$s3_utils = new \AWSS3\utils;
 
 $ready = 0;
-$mod_fm = \cms_utils::get_module('FileManager');
 
 if(!$sdk_utils->is_valid()){
     $error = 1;

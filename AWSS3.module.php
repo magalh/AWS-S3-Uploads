@@ -24,13 +24,13 @@
 # See the GNU General Public License for more details.
 #---------------------------------------------------------------------------------------------------
 
-use \AWSS3\aws_s3_utils;
+use \AWSS3\utils;
 
 class AWSS3 extends CMSModule
 {
 	const MANAGE_PERM = 'manage_AWSS3';	
 	
-	public function GetVersion() { return '1.0.0'; }
+	public function GetVersion() { return '1.0.1'; }
 	public function GetFriendlyName() { return $this->Lang('friendlyname'); }
 	public function GetAdminDescription() { return $this->Lang('admindescription'); }
 	public function IsPluginModule() { return TRUE; }
@@ -42,38 +42,35 @@ class AWSS3 extends CMSModule
 	public function UninstallPreMessage() { return $this->Lang('ask_uninstall'); }
 	public function GetAdminSection() { return 'extentions'; }
     public function MinimumCMSVersion() { return '2.2.1'; }
-    public function GetDependencies() { return ['AWSSDK' => '1.0.0']; }
+    public function GetDependencies() { return ['AWSSDK' => '1.0.0','FileManager' => '1.6.13']; }
 
     public function __construct(){
         parent::__construct();
-
-        \spl_autoload_register([$this, 'autoload']);
 
         $smarty = \CmsApp::get_instance()->GetSmarty();
         if( !$smarty ) return;
 
         $sdk = cms_utils::get_module( 'AWSSDK' );
-        $fn = $this->GetModulePath().'/lib/class.aws_s3_utils.php'; require_once($fn);
-        $fn = $sdk->GetModulePath().'/lib/class.aws_sdk_utils.php'; require_once($fn);
-
-        $smarty->registerClass('s3_utils','\AWSS3\aws_s3_utils');
-        $smarty->registerClass('sdk_utils','\AWSSDK\aws_sdk_utils');
-        
-        $smarty->assign('sdk',$sdk);
-
-        if ($sdk->is_developer_mode()){
-            $smarty->assign('isdev',true);
+        if(is_object($sdk)){
+            \spl_autoload_register([$this, 'autoload']);
+            $fn = $sdk->GetModulePath().'/lib/class.utils.php'; require_once($fn);
+            $smarty->registerClass('sdk_utils','\AWSSDK\utils');
+            $smarty->assign('sdk',$sdk);
+            if ($sdk->is_developer_mode()){
+                $smarty->assign('isdev',true);
+            }
         }
-    
+        $fn = $this->GetModulePath().'/lib/class.utils.php'; require_once($fn);
+        $smarty->registerClass('s3_utils','\AWSS3\utils');
+        
   }
 
   public function autoload($classname) : bool
   {
-    
     $sdk_mod = cms_utils::get_module( 'AWSSDK' );
-      $path = $sdk_mod->GetModulePath() . '/lib';
-      require_once $path.'/SDK/aws-autoloader.php';
-      return TRUE;
+    $path = $sdk_mod->GetModulePath() . '/lib';
+    require_once $path.'/SDK/aws-autoloader.php';
+    return TRUE;
   }
 	
 	public function InitializeFrontend() {
@@ -89,7 +86,7 @@ class AWSS3 extends CMSModule
         $this->SetParameterType('detailtemplate',CLEAN_STRING);
         $this->SetParameterType('junk',CLEAN_STRING);
 
-        $this->RegisterRoute('/[Ss]3\/[Ss]\/(?P<prefix>.*?)$/', array('action'=>'signed'));
+        $this->RegisterRoute('/[Ss]3\/[Ss]\/(?P<key>.*?)$/', array('action'=>'signed'));
         $this->RegisterRoute('/[Ss]3\/[Ff]ile\/(?P<prefix>.*)\/(?P<returnid>[0-9]+)$/', array('action'=>'detail'));
         $this->RegisterRoute('/[Ss]3\/[Ff]ile\/(?P<prefix>.*)\/(?P<returnid>[0-9]+)\/(?P<junk>.*?)$/', array('action'=>'detail'));
 
@@ -234,9 +231,9 @@ class AWSS3 extends CMSModule
 
     public function CreateSignedLink($name)
     {
-        $mod_sdk = \cms_utils::get_module('AWSSDK');
+
         $base_url = CMS_ROOT_URL;
-        $name = $mod_sdk->encodefilename($name);
+        $name = \AWSSDK\encrypt::encodefilename($name);
         $out = $base_url."/S3/s/".$name;
 
         return $out;
@@ -271,9 +268,8 @@ class AWSS3 extends CMSModule
     {
         $bucket_id = $qparms['bucket'];
         $prefix = $qparms['prefix'];
-        $mod_sdk = \cms_utils::get_module('AWSSDK');
         $config = \cms_config::get_instance();
-        $json_file_name = 'awss3_'.$mod_sdk->encodefilename($bucket_id.'_'.str_replace('/', '_', $prefix)).'.cms';
+        $json_file_name = 'awss3_'.\AWSSDK\encrypt::encodefilename($bucket_id.'_'.str_replace('/', '_', $prefix)).'.cms';
         $json_file_Path = $config['tmp_cache_location'].'/'.$json_file_name;
 
         return $json_file_Path;

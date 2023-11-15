@@ -30,8 +30,8 @@ if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
 header('Content-type: application/json');
-use AWSS3\aws_s3_utils;
-$utils = new aws_s3_utils();
+use AWSS3\utils;
+$utils = new utils();
 $FileManager = \cms_utils::get_module('FileManager');
 $error = 0;
 

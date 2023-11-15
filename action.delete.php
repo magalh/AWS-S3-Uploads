@@ -53,13 +53,13 @@ if( isset($params['submit']) ) {
     $lastchar = $file[-1];
 
     if ( strcmp($lastchar, "/") === 0 ) {
-      aws_s3_utils::deleteObjectDir($bucket_id,$file);
+      utils::deleteObjectDir($bucket_id,$file);
       audit('',"AWSS3", "Removed directory: ".$file);
       \CMSMS\HookManager::do_hook('AWSS3::OnDirectoryDeleted', $parms );
       continue;
     }
     
-    aws_s3_utils::deleteObject($bucket_id,$file);
+    utils::deleteObject($bucket_id,$file);
     $parms = array('file'=>$file);
     audit('',"S3", "Removed file: ".$file);
     \CMSMS\HookManager::do_hook('AWSS3::OnFileDeleted', $parms );

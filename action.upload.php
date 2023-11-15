@@ -29,13 +29,13 @@ namespace AWSS3;
 if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
-use \AWSS3\aws_s3_utils;
+use \AWSS3\utils;
 $__sdk = \cms_utils::get_module('AWSSDK');
 
 $template = \xt_param::get_string($params,'template',$this->GetPreference('default_uploadform'));
 $nocaptcha = \xt_param::get_bool($params,'nocaptcha');
 $message = null;
-$utils = new aws_s3_utils();
+$utils = new utils();
 
 //$template = 'orig_uploadform_template.tpl';
 $tpl = $smarty->CreateTemplate($this->GetTemplateResource($template),null,null,$smarty);
