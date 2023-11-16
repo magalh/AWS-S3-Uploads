@@ -107,6 +107,43 @@ try {
     audit('',$this->GetName(),'Installation Error: '.$e->GetMessage());
   }
 
+  # Setup upload template
+  try {
+    $upload_template_type = new CmsLayoutTemplateType();
+    $upload_template_type->set_originator($this->GetName());
+    $upload_template_type->set_name('upload');
+    $upload_template_type->set_dflt_flag(TRUE);
+    $upload_template_type->set_lang_callback('AWSS3::page_type_lang_callback');
+    $upload_template_type->set_content_callback('AWSS3::reset_page_type_defaults');
+    $upload_template_type->reset_content_to_factory();
+    $upload_template_type->set_help_callback('AWSS3::template_help_callback');
+    $upload_template_type->save();
+  }
+  catch( CmsException $e ) {
+    // log it
+    debug_to_log(__FILE__.':'.__LINE__.' '.$e->GetMessage());
+    audit('',$this->GetName(),'Installation Error: '.$e->GetMessage());
+  }
+  
+  try {
+    $fn = dirname(__FILE__).DIRECTORY_SEPARATOR.'templates'.DIRECTORY_SEPARATOR.'orig_uploadform_template.tpl';
+    if( file_exists( $fn ) ) {
+      $template = @file_get_contents($fn);
+      $tpl = new CmsLayoutTemplate();
+      $tpl->set_name('AWSS3 Upload Form Sample');
+      $tpl->set_owner($uid);
+      $tpl->set_content($template);
+      $tpl->set_type($upload_template_type);
+      $tpl->set_type_dflt(TRUE);
+      $tpl->save();
+    }
+  }
+  catch( CmsException $e ) {
+    // log it
+    debug_to_log(__FILE__.':'.__LINE__.' '.$e->GetMessage());
+    audit('',$this->GetName(),'Installation Error: '.$e->GetMessage());
+  }
+
 
   // create preferences
 $this->SetPreference('allowed', 'jpg,jpeg,gif,png');

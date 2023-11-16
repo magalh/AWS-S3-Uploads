@@ -29,7 +29,11 @@ namespace AWSS3;
 if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
-$sdk_mod = $sdk_utils::get_mod();
+use \AWSS3\utils;
+
+$sdk_mod = utils::get_sdk();
+$sdk_utils = $sdk_mod->getUtils();
+
 $error = 0;
 $ready = 0;
 

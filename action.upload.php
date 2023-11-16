@@ -30,16 +30,26 @@ if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
 use \AWSS3\utils;
+
 $__sdk = \cms_utils::get_module('AWSSDK');
 
-$template = \xt_param::get_string($params,'template',$this->GetPreference('default_uploadform'));
+$tpl = \CmsLayoutTemplate::load_dflt_by_type('AWSS3::upload');
+if( !is_object($tpl) ) {
+    audit('',$this->GetName(),'No default upload template found');
+    return;
+}
+$template = $tpl->get_name();
+
+print_r($params);
+
+$template = \xt_param::get_string($params,'template',$template);
 $nocaptcha = \xt_param::get_bool($params,'nocaptcha');
+echo "nocaptcha".$nocaptcha;
 $message = null;
 $utils = new utils();
 
 //$template = 'orig_uploadform_template.tpl';
 $tpl = $smarty->CreateTemplate($this->GetTemplateResource($template),null,null,$smarty);
-
 
 if( isset($params['input_submit']) ) {
     try {

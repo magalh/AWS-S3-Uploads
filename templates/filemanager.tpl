@@ -210,5 +210,3 @@ $(document).ready(function () {
     </div>
   {/if}
 </div>{* .row *}
-
-{get_template_vars}

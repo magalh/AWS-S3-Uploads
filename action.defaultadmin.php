@@ -28,20 +28,15 @@ if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission(AWSS3::MANAGE_PERM) ) return;
 
 use \AWSS3\helpers;
+use \AWSS3\utils;
 
-$sdk = cms_utils::get_module( 'AWSSDK' );
 $mod_fm = \cms_utils::get_module('FileManager');
-
-$sdk_utils = $sdk->getUtils();
-$s3_utils = new \AWSS3\utils;
+$sdk_utils = utils::get_sdk()->getUtils();
+$s3_utils = new utils();
 
 $ready = 0;
 
-if(!$sdk_utils->is_valid()){
-    $error = 1;
-    $link = $sdk_utils::get_mod()->create_url('m1_', 'defaultadmin', $returnid, array());
-    $message = $sdk_utils::get_mod()->_DisplayMessage($this->Lang('error_setup',$link),"alert-danger",true);
-} else if($s3_utils->validate()){
+if($s3_utils->validate()){
 	$ready = 1;
 	$bucket_id = $this->GetOptionValue('bucket_name');
 }

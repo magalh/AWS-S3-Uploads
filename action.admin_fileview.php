@@ -87,9 +87,9 @@ if($nminutes == 0) {
       $data = json_decode($tmp, false);
   
       $enddate  = strtotime(sprintf("+%d minutes", $nminutes), $data->date);
-      //if (time() >= $enddate) {
+      if (time() >= $enddate) {
           $data = bucket_query::cache_query($qparms,$json_file_Path);
-      //}
+      }
 
   }
 }

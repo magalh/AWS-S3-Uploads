@@ -44,7 +44,7 @@ $lang['expiry_interval'] = 'Remove cache files that are older than the specified
 $lang['file'] = 'File';
 $lang['fielddef_allow_help'] = 'Specify a comma separated list of file extensions that are allowed. For example: pdf,gif,jpeg,jpg (keep lowercase)';
 $lang['firstpage'] = '&lt;&lt;';
-$lang['friendlyname'] = 'AWSS3 Module';
+$lang['friendlyname'] = 'AWS S3';
 #G
 $lang['getstarted'] = 'Get Started with AWS S3 Module';
 #H
@@ -137,6 +137,7 @@ $lang['type_AWSS3'] = 'AWSS3';
 $lang['type_detail'] = 'Detail';
 $lang['type_summary'] = 'Summary';
 $lang['type_Reviews'] = 'Reviews';
+$lang['type_upload'] = 'Upload';
 $lang['title_changedir'] = 'Change working directory to this directory';
 $lang['title_changeupdir'] = 'Go to the parent folder';
 $lang['title_dropzone'] = 'You can drop files here from your file manager to automatically begin uploading';

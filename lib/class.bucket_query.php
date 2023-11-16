@@ -226,7 +226,7 @@ final class bucket_query
                 $onerow->presigned_url = $__mod->CreateSignedLink($onerow->key);
                 $onerow->presigned_link = "<a href='" . $onerow->presigned_url . "' class=\"card-link\">" . $onerow->name . "</a>";
                 $onerow->presigned_icon_link = "<a href='" . $onerow->presigned_url . "' class=\"card-link\">" . $onerow->icon . "</a>";
-                $onerow->detail_link = $__mod->create_url($id, 'detail', $detailspage, array('prefix' => $onerow->key_encoded));
+                $onerow->detail_link = $__mod->create_url('cntnt01', 'detail', $detailspage, array('prefix' => $onerow->key_encoded));
 
                 if( $config['url_rewriting'] == 'mod_rewrite')
                 {

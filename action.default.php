@@ -91,7 +91,7 @@ use \AWSS3\bucket_query;
         $obj->prefix = implode('/',array_slice($explodedprefix,0,$i+1)).'/';
         if( $i < count($explodedprefix) - 1 ) {
             $params['prefix'] = $obj->prefix;
-            $obj->url = $this->CreateFrontendLink($id,$returnid,'default','',$params, '', true);
+            $obj->url = $this->CreateLink($id,'default',$returnid,'',$params, '', true);
         } else {
             // the last entry... no link
         }
@@ -118,8 +118,8 @@ use \AWSS3\bucket_query;
             unset($params['prefix']);
         }
         unset($params['pagenumber']);
-        $up_dirurl = $this->CreateFrontendLink($id,$returnid,'default',$img_tag,$params,'',true);
-        $up_diriconlink = $this->CreateFrontendLink($id,$returnid,'default',$img_tag,$params,'',false,true,"class='card-link'");
+        $up_dirurl = $this->CreateLink($id,'default',$returnid,$img_tag,$params,'',true);
+        $up_diriconlink = $this->CreateLink($id,'default',$returnid,$img_tag,$params,'',false,true,"class='card-link'");
         $up_dirlink = "<a class=\"card-link\" href=\"{$up_dirurl}\" title=\"{$this->Lang('title_changeupdir')}\">..</a>";
 
         $tpl_ob->assign('up_dirurl',$up_dirurl);
@@ -169,11 +169,11 @@ use \AWSS3\bucket_query;
     }
     else {
         $params['pagenumber']=$pagenumber-1;
-        $tpl_ob->assign('prevpage',$this->CreateFrontendLink($id,$returnid,'default',$this->Lang('prevpage'),$params));
-        $tpl_ob->assign('prevurl',$this->CreateFrontendLink($id,$returnid,'default','',$params, '', true));
+        $tpl_ob->assign('prevpage',$this->CreateLink($id,'default',$returnid,$this->Lang('prevpage'),$params));
+        $tpl_ob->assign('prevurl',$this->CreateLink($id,'default',$returnid,'',$params, '', true));
         $params['pagenumber']=1;
-        $tpl_ob->assign('firstpage',$this->CreateFrontendLink($id,$returnid,'default',$this->Lang('firstpage'),$params));
-        $tpl_ob->assign('firsturl',$this->CreateFrontendLink($id,$returnid,'default','',$params, '', true));
+        $tpl_ob->assign('firstpage',$this->CreateLink($id,'default',$returnid,$this->Lang('firstpage'),$params));
+        $tpl_ob->assign('firsturl',$this->CreateLink($id,'default',$returnid,'',$params, '', true));
     }
 
     if( $pagenumber >= $pagecount ) {
@@ -182,11 +182,16 @@ use \AWSS3\bucket_query;
     }
     else {
         $params['pagenumber']=$pagenumber+1;
-        $tpl_ob->assign('nextpage',$this->CreateFrontendLink($id,$returnid,'default',$this->Lang('nextpage'),$params));
-        $tpl_ob->assign('nexturl',$this->CreateFrontendLink($id,$returnid,'default','',$params, '', true));
+        $tpl_ob->assign('nextpage',$this->CreateLink($id,'default',$returnid,$this->Lang('nextpage'),$params));
+        $tpl_ob->assign('nexturl',$this->CreateLink($id,'default',$returnid,'',$params, '', true));
+
+/*        function CreateFrontendLink( $id, $returnid, $action, $contents='', $params=array(),
+        $warn_message='', $onlyhref=false, $inline=true, $addtext='',
+        $targetcontentonly=false, $prettyurl='' )*/
+
         $params['pagenumber']=$pagecount;
-        $tpl_ob->assign('lastpage',$this->CreateFrontendLink($id,$returnid,'default',$this->Lang('lastpage'),$params));
-        $tpl_ob->assign('lasturl',$this->CreateFrontendLink($id,$returnid,'default','',$params, '', true));
+        $tpl_ob->assign('lastpage',$this->CreateLink($id,'default',$returnid,$this->Lang('lastpage'),$params));
+        $tpl_ob->assign('lasturl',$this->CreateLink($id,'default',$returnid,'',$params, '', true));
     }
 
     $tpl_ob->assign('bucket',$bucket_id);
@@ -215,7 +220,7 @@ use \AWSS3\bucket_query;
                 if( isset( $params['pagelimit'] ) ) {
                     $sendtodetail = array_merge($sendtodetail,array('pagelimit'=>$pagelimit));
                 }
-                $onerow->link = $this->CreateLink($id, 'default', $returnid, '', $sendtodetail,'', true, false, '', true,$prettyurl);
+                $onerow->link = $this->CreateLink($id, 'default', $returnid, '', $sendtodetail,'', true, false, '', true);
                 $onerow->icon_link = "<a href='" . $onerow->link . "' class=\"card-link\">".$onerow->icon."</a>";
             }
             $entryarray[]= $onerow;

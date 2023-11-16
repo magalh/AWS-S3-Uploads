@@ -4,6 +4,18 @@
 
 {form_start}
 <div class="pageoverflow">
+ <p class="pagetext">{$mod->Lang('access_key')}:&nbsp;{cms_help key2='help_access_key' title=$mod->Lang('access_key')}</p>
+ <p class="pageinput">
+    <input type="text" name="{$actionid}settings_input[access_key]" value="{$mod->GetOptionValue("access_key")}" size="50" maxlength="50"/>
+ </p>
+</div>
+<div class="pageoverflow">
+ <p class="pagetext">{$mod->Lang('access_secret_key')}:</p>
+ <p class="pageinput">
+    <input type="text" name="{$actionid}settings_input[access_secret_key]" value="{$mod->GetOptionValue("access_secret_key")}" size="50" maxlength="50"/>
+ </p>
+</div>
+<div class="pageoverflow">
  <p class="pagetext">{$mod->Lang('bucket_name')}:&nbsp;{cms_help key2='help_bucket_name' title=$mod->Lang('bucket_name')}</p>
  <p class="pageinput">
     <input type="text" name="{$actionid}settings_input[bucket_name]" value="{$mod->GetOptionValue("bucket_name")}" size="50" maxlength="50"/>

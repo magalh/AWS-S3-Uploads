@@ -28,6 +28,7 @@ namespace AWSS3;
 
 use \Aws\S3\S3Client;  
 use \Aws\Exception\AwsException;
+use \Aws\Credentials\Credentials;
 use \Aws\Exception\UnresolvedEndpointException;
 use \AWSSDK\Exception;
 use \AWSS3\helpers;
@@ -70,7 +71,7 @@ final class utils
         if(empty($settings)) return false;
 
         try {
-            $data = array('bucket_name','access_region');
+            $data = array('access_key','access_secret_key','bucket_name','access_region');
 
             foreach ($data as $key)
             {
@@ -94,6 +95,7 @@ final class utils
             $this->s3Client = $s3;
 
             if(!$this->s3Client->doesBucketExist($this->mod->GetPreference('bucket_name'))){
+                echo 'no bucket';
                 $this->errors[] = $this->mod->GetPreference('bucket_name')." does not exist";
                 throw new \AWSSDK\Exception($this->errors,"slide-danger");
             }
@@ -316,7 +318,8 @@ final class utils
     }
 
     private static function get_credentials(){
-        $credentials = self::get_sdk()->getCredentials();
+        $mod = self::get_mod();
+        $credentials = new Credentials($mod->GetPreference('access_key'),$mod->GetPreference('access_secret_key'));
         return $credentials;
     }
 

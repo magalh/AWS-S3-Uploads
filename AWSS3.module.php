@@ -30,7 +30,7 @@ class AWSS3 extends CMSModule
 {
 	const MANAGE_PERM = 'manage_AWSS3';	
 	
-	public function GetVersion() { return '1.0.1'; }
+	public function GetVersion() { return '1.1.1'; }
 	public function GetFriendlyName() { return $this->Lang('friendlyname'); }
 	public function GetAdminDescription() { return $this->Lang('admindescription'); }
 	public function IsPluginModule() { return TRUE; }
@@ -40,9 +40,9 @@ class AWSS3 extends CMSModule
 	public function GetAuthor() { return 'Magal Hezi'; }
 	public function GetAuthorEmail() { return 'h_magal@hotmail.com'; }
 	public function UninstallPreMessage() { return $this->Lang('ask_uninstall'); }
-	public function GetAdminSection() { return 'extentions'; }
+	public function GetAdminSection() { return 'content'; }
     public function MinimumCMSVersion() { return '2.2.1'; }
-    public function GetDependencies() { return ['AWSSDK' => '1.0.0','FileManager' => '1.6.13']; }
+    public function GetDependencies() { return ['AWSSDK' => '1.1.0','FileManager' => '1.6.13']; }
 
     public function __construct(){
         parent::__construct();
@@ -62,7 +62,7 @@ class AWSS3 extends CMSModule
         }
         $fn = $this->GetModulePath().'/lib/class.utils.php'; require_once($fn);
         $smarty->registerClass('s3_utils','\AWSS3\utils');
-        
+
   }
 
   public function autoload($classname) : bool
@@ -85,6 +85,7 @@ class AWSS3 extends CMSModule
         $this->SetParameterType('detailpage',CLEAN_STRING);
         $this->SetParameterType('detailtemplate',CLEAN_STRING);
         $this->SetParameterType('junk',CLEAN_STRING);
+        $this->SetParameterType('nocaptcha',CLEAN_INT);
 
         $this->RegisterRoute('/[Ss]3\/[Ss]\/(?P<key>.*?)$/', array('action'=>'signed'));
         $this->RegisterRoute('/[Ss]3\/[Ff]ile\/(?P<prefix>.*)\/(?P<returnid>[0-9]+)$/', array('action'=>'detail'));
@@ -100,7 +101,6 @@ class AWSS3 extends CMSModule
          $this->CreateParameter('summarytemplate',null,$this->Lang('help_param_summarytemplate'));
          $this->CreateParameter('detailpage',null,$this->Lang('help_param_detailpage'));
          $this->CreateParameter('detailtemplate',null,$this->Lang('help_param_detailtemplate'));
-         #$this->CreateParameter('detailpage',null,$this->Lang('help_param_detailpage'));
 	 }
 	
 	public function GetHelp() { return @file_get_contents(__DIR__.'/README.md'); }
@@ -219,6 +219,10 @@ class AWSS3 extends CMSModule
 
         case 'detail':
             $fn = 'orig_detail_template.tpl';
+            break;
+
+        case 'upload':
+            $fn = 'orig_uploadform_template.tpl';
             break;
 
         case 'form':
