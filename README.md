@@ -11,7 +11,7 @@
 <p>
 <pre>
 {AWSS3}
-{AWSS3 prefix="imgage/"}
+{AWSS3 prefix="images/"}
 {AWSS3 action=upload}
 {AWSS3 action=detail prefix="EXWD4342 (4).JPG"}
 </pre>
