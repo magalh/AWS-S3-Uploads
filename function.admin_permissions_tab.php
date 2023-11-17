@@ -23,6 +23,9 @@
 # without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 # See the GNU General Public License for more details.
 #---------------------------------------------------------------------------------------------------
+#
+# Amazon Web Services, AWS, and the Powered by AWS logo are trademarks of Amazon.com, Inc. or its affiliates
+#---------------------------------------------------------------------------------------------------
 
 namespace AWSS3;
 

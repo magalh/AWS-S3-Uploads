@@ -23,8 +23,15 @@
 # without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 # See the GNU General Public License for more details.
 #---------------------------------------------------------------------------------------------------
+#
+# Amazon Web Services, AWS, and the Powered by AWS logo are trademarks of Amazon.com, Inc. or its affiliates
+#---------------------------------------------------------------------------------------------------
+
+namespace AWSS3;
 
 if( !defined('CMS_VERSION') ) exit;
+
+use \AWSSDK\Exception;
 
 	// pass data to head section.
 	$template_head = $this->_output_frontend_css();
@@ -40,7 +47,7 @@ if( !defined('CMS_VERSION') ) exit;
 		$template = trim($params['detailtemplate']);
 	}
 	else {
-		$tpl = CmsLayoutTemplate::load_dflt_by_type('AWSS3::detail');
+		$tpl = \CmsLayoutTemplate::load_dflt_by_type('AWSS3::detail');
 		if( !is_object($tpl) ) {
 			audit('',$this->GetName(),'No default detail template found');
 			return;
@@ -50,21 +57,23 @@ if( !defined('CMS_VERSION') ) exit;
 
 	try {
 		if( !isset($params['prefix']) ) {
-			throw new \AWSSDK\Exception('Upload id not specified',500);
+			throw new \AWSSDK\Exception('Key is not specified',500);
 		}
+
+		$key = urldecode($params['prefix']);
+		$entry = utils::get_file_info($key);
+
 	} catch (\AWSSDK\Exception $e) {
-		$this->_DisplayMessage($e->getText(),$e->getType());
+		utils::get_sdk()->_DisplayMessage($e->getText(),$e->getType());
 	}
 
-	$key = urldecode($params['prefix']);
-	$entry = \AWSS3\utils::get_file_info($key);
 
     $tpl_ob = $smarty->CreateTemplate($this->GetTemplateResource($template),null,null,$smarty);
     $tpl_ob->assign('entry',$entry);
-	$tpl_ob->assign('settings',$this->GetSettingsValues());
+	//$tpl_ob->assign('settings',$this->GetSettingsValues());
     $tpl_ob->display();
 
 	if($debug) 
-	$tpl_ob->display('string:<pre>{$entry|@print_r}</pre>');
+	$tpl_ob->display('string:<pre>{get_template_vars}</pre>');
 
 ?>

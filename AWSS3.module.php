@@ -23,6 +23,9 @@
 # without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 # See the GNU General Public License for more details.
 #---------------------------------------------------------------------------------------------------
+#
+# Amazon Web Services, AWS, and the Powered by AWS logo are trademarks of Amazon.com, Inc. or its affiliates
+#---------------------------------------------------------------------------------------------------
 
 use \AWSS3\utils;
 
@@ -95,6 +98,7 @@ class AWSS3 extends CMSModule
 
 	 public function InitializeAdmin() {
 		 $this->SetParameters();
+         $this->CreateParameter('action','default',$this->Lang('help_param_action'));
          $this->CreateParameter('prefix',null,$this->Lang('help_param_prefix'));
          $this->CreateParameter('pagelimit',null,$this->Lang('help_param_pagelimit'));
          $this->CreateParameter('summarypage',null,$this->Lang('help_param_summarypage'));
@@ -202,7 +206,7 @@ class AWSS3 extends CMSModule
         $str = trim($str);
         $mod = cms_utils::get_module('AWSS3');
         if( is_object($mod) ) {
-            $file = $mod->GetModulePath().'/doc/help.inc';
+            $file = $mod->GetModulePath().'/README.md';
             if( is_file($file) ) return file_get_contents($file);
         }
     }

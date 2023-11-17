@@ -23,6 +23,9 @@
 # without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 # See the GNU General Public License for more details.
 #---------------------------------------------------------------------------------------------------
+#
+# Amazon Web Services, AWS, and the Powered by AWS logo are trademarks of Amazon.com, Inc. or its affiliates
+#---------------------------------------------------------------------------------------------------
 
 namespace AWSS3;
 
@@ -190,7 +193,7 @@ if ($startelement < 0 || $startelement > $endelement) {
   foreach( $selectedItems as $row ) {
       $onerow = $row;
       if($onerow->dir){
-          $sendtodetail = array('prefix'=>$onerow->key);
+          $sendtodetail = array('key'=>$onerow->key);
           if( isset( $params['pagelimit'] ) ) {
               $sendtodetail = array_merge($sendtodetail,array('pagelimit'=>$pagelimit));
           }

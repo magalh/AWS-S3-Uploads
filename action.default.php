@@ -23,6 +23,9 @@
 # without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 # See the GNU General Public License for more details.
 #---------------------------------------------------------------------------------------------------
+#
+# Amazon Web Services, AWS, and the Powered by AWS logo are trademarks of Amazon.com, Inc. or its affiliates
+#---------------------------------------------------------------------------------------------------
 
 if( !defined('CMS_VERSION') ) exit;
 
@@ -185,10 +188,6 @@ use \AWSS3\bucket_query;
         $tpl_ob->assign('nextpage',$this->CreateLink($id,'default',$returnid,$this->Lang('nextpage'),$params));
         $tpl_ob->assign('nexturl',$this->CreateLink($id,'default',$returnid,'',$params, '', true));
 
-/*        function CreateFrontendLink( $id, $returnid, $action, $contents='', $params=array(),
-        $warn_message='', $onlyhref=false, $inline=true, $addtext='',
-        $targetcontentonly=false, $prettyurl='' )*/
-
         $params['pagenumber']=$pagecount;
         $tpl_ob->assign('lastpage',$this->CreateLink($id,'default',$returnid,$this->Lang('lastpage'),$params));
         $tpl_ob->assign('lasturl',$this->CreateLink($id,'default',$returnid,'',$params, '', true));
@@ -236,6 +235,6 @@ use \AWSS3\bucket_query;
     $tpl_ob->display();
 
     if($debug) 
-	$tpl_ob->display('string:<pre>{$qparms|@print_r}</pre>');
+	$tpl_ob->display('string:<pre>{get_template_vars}</pre>');
 
 ?>

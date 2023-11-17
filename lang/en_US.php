@@ -52,10 +52,8 @@ $lang['help_param_action'] = '
     Override the default action. Possible values are:
     <ul>
         <li>&quot;default&quot; - displays the summary view.</li>
-        <li>&quot;detail&quot; - displays a specified entry in detail mode.</li>
-        <li>&quot;search&quot; - displays the search form. Optional parameters that affect to this action only: <em>filter.</em></li>
-        <li>&quot;category&quot; - displays the categories. Optional parameters that affect to this action only: <em>show_items, collapse, number_of_levels.</em></li>
-        <li>&quot;archive&quot; - displays the archives. </li>
+        <li>&quot;detail&quot; - displays a specified entry in detail mode. (must be used together with <i>prefix</i>)</li>
+        <li>&quot;upload&quot; - displays the upload form (can be used with <i>prefix</i> for upload in a specific location)</em></li>
     </ul>';
 $lang['help_param_prefix'] = 'A string of characters that can be the complete path in front of the object name. Project/WordFiles/...';
 $lang['help_param_detailtemplate'] = 'The detail template you wish to use.';

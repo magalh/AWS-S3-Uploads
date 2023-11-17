@@ -28,4 +28,3 @@ $(document).ready(function () {
 })
 </script> 
 <!-- end remove -->
-{get_template_vars}

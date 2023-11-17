@@ -1,3 +1,4 @@
+<a href="https://aws.amazon.com/what-is-cloud-computing"><img src="https://d1.awsstatic.com/logos/aws-logo-lockups/poweredbyaws/Powered-By_logo-horiz_RGB.87c70af8a8a34b68606524ade6261db083947a14.png" alt="Powered by AWS Cloud Computing" width="200" style="float:right"></a>
 <h3>What Does This Do?</h3>
 <p>This CMSMS plugin allows you to use Amazon’s Simple Storage Service to host your media for your CMSMS setup.</p>
 
@@ -7,6 +8,15 @@
 
 <h3>How Do I Use It</h3>
 <p>Configure the plugin in the ‘Options’ (or ‘Settings’) screen by following the onscreen prompts.<br>Once setup is completed, you can embed the {AWSS3} tag in your pages. You can use the Parameters below to customize your experience.</p>
+<p>
+<pre>
+{AWSS3}
+{AWSS3 prefix="imgage/"}
+{AWSS3 action=upload}
+{AWSS3 action=detail prefix="EXWD4342 (4).JPG"}
+</pre>
+</p>
+
 <h3>Feedback/Support</h3>
 <p>This module does not include commercial support. However, there are a number of resources available to help you with it:</p>
 <ul>
@@ -37,4 +47,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
-Or read it <a href="http://www.gnu.org/licenses/licenses.html#GPL">online</a></p>
+Or read it <a href="http://www.gnu.org/licenses/licenses.html#GPL">online</a>
+</p>
+
+<p><strong>Amazon Web Services, AWS, and the Powered by AWS logo are trademarks of Amazon.com, Inc. or its affiliates</strong></p>

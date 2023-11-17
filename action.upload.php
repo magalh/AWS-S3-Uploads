@@ -23,6 +23,9 @@
 # without even the implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
 # See the GNU General Public License for more details.
 #---------------------------------------------------------------------------------------------------
+#
+# Amazon Web Services, AWS, and the Powered by AWS logo are trademarks of Amazon.com, Inc. or its affiliates
+#---------------------------------------------------------------------------------------------------
 
 namespace AWSS3;
 
@@ -31,8 +34,6 @@ if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
 use \AWSS3\utils;
 
-$__sdk = \cms_utils::get_module('AWSSDK');
-
 $tpl = \CmsLayoutTemplate::load_dflt_by_type('AWSS3::upload');
 if( !is_object($tpl) ) {
     audit('',$this->GetName(),'No default upload template found');
@@ -40,13 +41,12 @@ if( !is_object($tpl) ) {
 }
 $template = $tpl->get_name();
 
-print_r($params);
-
 $template = \xt_param::get_string($params,'template',$template);
 $nocaptcha = \xt_param::get_bool($params,'nocaptcha');
-echo "nocaptcha".$nocaptcha;
+$debug = isset($params['debug']);
 $message = null;
 $utils = new utils();
+$sdk = utils::get_sdk();
 
 //$template = 'orig_uploadform_template.tpl';
 $tpl = $smarty->CreateTemplate($this->GetTemplateResource($template),null,null,$smarty);
@@ -77,15 +77,14 @@ if( isset($params['input_submit']) ) {
 
         $file_temp_src = $_FILES[$id.'input_browse']["tmp_name"];
         if(is_uploaded_file($file_temp_src)){
-            $bucket_id = $this->GetOptionValue('bucket_name');
-            $ret = $utils->upload_file($bucket_id,$prefix.$file_name,$file_temp_src);
+            $ret = $utils->upload_file($prefix.$file_name,$file_temp_src);
         }
     
         if( $ret[0] == false ) throw new \Exception($ret[1]);
         $good_upload = $ret[2];
         // redirect outa here, or display a message
         if( ($tmp = $params['redirect']) ) {
-            $destpage = $__sdk->resolve_alias_or_id($tmp,$returnid);
+            $destpage = $sdk->resolve_alias_or_id($tmp,$returnid);
             $this->redirectcontent( $destpage );
         }
     }
@@ -101,7 +100,7 @@ if( isset($params['input_submit']) ) {
         $message = $this->Lang('successful_upload',$good_upload);
     }
 
-    $message = $__sdk->_DisplayMessage($message,$type,1);
+    $message = $sdk->_DisplayMessage($message,$type,1);
 
     $tpl->assign('message',$message);
 
@@ -120,5 +119,8 @@ if( !$nocaptcha ) {
 }
 
 $tpl->display();
+
+if($debug) 
+$tpl_ob->display('string:<pre>{get_template_vars}</pre>')
 
 ?>
