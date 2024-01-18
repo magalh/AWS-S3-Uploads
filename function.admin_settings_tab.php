@@ -32,13 +32,7 @@ namespace AWSS3;
 if( !defined('CMS_VERSION') ) exit;
 if( !$this->CheckPermission($this::MANAGE_PERM) ) return;
 
-use \AWSS3\utils;
-
-$sdk_mod = utils::get_sdk();
-$sdk_utils = $sdk_mod->getUtils();
-
 $error = 0;
-$ready = 0;
 
 if( isset($params['submit']) ) {
 
@@ -58,8 +52,6 @@ if( isset($params['submit']) ) {
     }
 }
 
-
-
 $content_ops         = cmsms()->GetContentOperations();
 $awsregionnames      = $sdk_mod->get_regions_options();
 
@@ -67,12 +59,12 @@ $tpl = $smarty->CreateTemplate( $this->GetTemplateResource('admin_settings_tab.t
 $tpl->assign('access_region_list',$awsregionnames);
 $tpl->assign('message',$message);
 $tpl->assign('error',$error);
-$tpl->assign('sdk_mod',$sdk_mod);
 
 // Module defaults
 $tpl->assign('input_detailpage', $content_ops->CreateHierarchyDropdown('', $this->GetPreference('detailpage'), $id.'settings_input[detailpage]'));
 $tpl->assign('input_summarypage', $content_ops->CreateHierarchyDropdown('', $this->GetPreference('summarypage'), $id.'settings_input[summarypage]'));
 
 $tpl->display();
+//$tpl->display('string:<pre>{get_template_vars}</pre>');
 
 

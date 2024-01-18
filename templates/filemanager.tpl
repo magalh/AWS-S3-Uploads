@@ -139,8 +139,8 @@ $(document).ready(function () {
   {$formstart}
 <div>
 	<fieldset id="navButtons">
-        {*filebtn id='btn_newdir' iname="{$actionid}fileactionnewdir" icon='ui-icon-circle-plus' text=$FileManager->Lang('newdir') title=$FileManager->Lang('title_newdir')*}
-    {filebtn id='btn_view' iname="{$actionid}fileactionview" icon='ui-icon-circle-zoomin' text=$FileManager->Lang('view') title=$FileManager->Lang('title_view')}
+      {*filebtn id='btn_newdir' iname="{$actionid}fileactionnewdir" icon='ui-icon-circle-plus' text=$FileManager->Lang('newdir') title=$FileManager->Lang('title_newdir')*}
+      {*filebtn id='btn_view' iname="{$actionid}fileactionview" icon='ui-icon-circle-zoomin' text=$FileManager->Lang('view') title=$FileManager->Lang('title_view')*}
 		{filebtn id='btn_delete' iname="{$actionid}fileactiondelete" icon='ui-icon-trash' text=$FileManager->Lang('delete') title=$FileManager->Lang('title_delete')}
     {filebtn id='btn_refresh' iname="{$actionid}fileactionrefresh" icon='ui-icon-refresh' text=$FileManager->Lang('refresh') title=$FileManager->Lang('title_refresh')}
     &nbsp;{$mod->Lang('last_refreshed')}&nbsp;{$lastupdate|localedate_format:'j %h Y H:i:s'}
@@ -154,6 +154,7 @@ $(document).ready(function () {
 		<thead>
 			<tr>
 				<th class="pageicon">&nbsp;</th>
+        <th class="pageicon">&nbsp;</th>
 				<th>{$FileManager->Lang("filename")}</th>
 				<th>{$FileManager->Lang('mimetype')}</th>
 				<th class="pageicon" title="{$FileManager->Lang('title_col_filesize')}" style="text-align:right;">{$FileManager->Lang("filesize")}</th>
@@ -168,10 +169,11 @@ $(document).ready(function () {
 		{foreach from=$items item=file}
 			{cycle values="row1,row2" assign=rowclass}
 			<tr class="{$rowclass}">
-				<td valign="middle">{$file->presigned_icon_link}</td>
+				<td valign="middle">{$file->icon_link}</td>
+        <td class="clickable" valign="middle"><a href="{$file->presigned_url}" target="_blank">{admin_icon icon='permissions.gif' alt='view_page'|lang}</a></td>
 				<td class="clickable" valign="middle">{$file->url_link}</td>
 				<td class="clickable" valign="middle">{$file->mime}</td>
-				<td class="clickable" style="padding-right:8px;white-space:pre;text-align:right;" valign="middle">{s3_utils::formatBytes($file->size)}</td>
+				<td class="clickable" style="padding-right:8px;white-space:pre;text-align:right;" valign="middle">{*s3_utils::formatBytes($file->size)*}</td>
                 <td class="clickable" style="padding-right:8px;white-space:pre;" valign="middle">{$file->date|cms_date_format}</td>
 				<td>{$file->openlink} {*admin_icon icon='view.gif' alt="Open"*}</td>
 				<td>
@@ -210,3 +212,5 @@ $(document).ready(function () {
     </div>
   {/if}
 </div>{* .row *}
+
+{*get_template_vars*}

@@ -29,9 +29,10 @@
 
 namespace AWSS3;
 
+use Aws\Sts\StsClient;
+use \Aws\Credentials\Credentials;
 use \Aws\S3\S3Client;  
 use \Aws\Exception\AwsException;
-use \Aws\Credentials\Credentials;
 use \Aws\Exception\UnresolvedEndpointException;
 use \AWSSDK\Exception;
 use \AWSS3\helpers;
@@ -70,7 +71,6 @@ final class utils
 
         $smarty = cmsms()->GetSmarty();
         $settings = $this->mod->GetSettingsValues();
-        //print_r($settings);
         if(empty($settings)) return false;
 
         try {
@@ -84,8 +84,11 @@ final class utils
                     $this->errors[] = $this->lang($key). " ".$this->lang("required") ;
                 }
             }
-            
+
             if(!empty($this->errors)){
+                if (count($this->errors) == 4) {
+                    return false;
+                }
                 //print_r($this->errors);
                 throw new \AWSSDK\Exception($this->errors,"slide-danger");
             }
@@ -98,7 +101,6 @@ final class utils
             $this->s3Client = $s3;
 
             if(!$this->s3Client->doesBucketExist($this->mod->GetPreference('bucket_name'))){
-                echo 'no bucket';
                 $this->errors[] = $this->mod->GetPreference('bucket_name')." does not exist";
                 throw new \AWSSDK\Exception($this->errors,"slide-danger");
             }
@@ -263,22 +265,13 @@ final class utils
         $s3 = self::getS3Client();
         try
             {
-                echo 'Attempting to delete ' . $keyname . '...' . PHP_EOL;
-
                 $result = $s3->deleteObject([
                     'Bucket' => $bucket,
                     'Key'    => $keyname
                 ]);
-
-                if ($result['DeleteMarker'])
-                {
-                    echo $keyname . ' was deleted or does not exist.' . PHP_EOL;
-                } else {
-                    exit('Error: ' . $keyname . ' was not deleted.' . PHP_EOL);
-                }
             }
             catch (AwsException $e) {
-                exit('Error: ' . $e->getAwsErrorMessage() . PHP_EOL);
+                echo "Error deleting object: " . $e->getAwsErrorMessage() . "\n";
             }
 
     }
@@ -321,8 +314,20 @@ final class utils
     }
 
     private static function get_credentials(){
+
         $mod = self::get_mod();
-        $credentials = new Credentials($mod->GetPreference('access_key'),$mod->GetPreference('access_secret_key'));
+        $stsClient = new StsClient([
+            'version' => 'latest',
+            'region' => 'us-east-1',
+            'credentials' => [
+                'key' => $mod->GetPreference('access_key'),
+                'secret' => $mod->GetPreference('access_secret_key'),
+            ],
+        ]);
+
+        $result = $stsClient->getSessionToken();
+        $credentials = $stsClient->createCredentials($result);
+
         return $credentials;
     }
 

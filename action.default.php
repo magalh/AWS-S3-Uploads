@@ -208,7 +208,7 @@ use \AWSS3\bucket_query;
     $tpl_ob->assign('pagetext',$this->Lang('prompt_page'));
 
     if ($startelement < 0 || $startelement > $endelement) {
-        echo "Invalid indexes.";
+        //echo "Invalid indexes.";
     } else {
         // Slice the array to extract elements between the indexes
         $selectedItems = array_slice($data->items, $startelement, $endelement - $startelement + 1);

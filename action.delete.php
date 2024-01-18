@@ -57,14 +57,14 @@ if( isset($params['submit']) ) {
 
     if ( strcmp($lastchar, "/") === 0 ) {
       utils::deleteObjectDir($bucket_id,$file);
-      audit('',"AWSS3", "Removed directory: ".$file);
+      audit('',$this->GetName(), "Removed directory: ".$file);
       \CMSMS\HookManager::do_hook('AWSS3::OnDirectoryDeleted', $parms );
       continue;
     }
     
     utils::deleteObject($bucket_id,$file);
     $parms = array('file'=>$file);
-    audit('',"S3", "Removed file: ".$file);
+    audit('',$this->GetName(), "Removed file: ".$file);
     \CMSMS\HookManager::do_hook('AWSS3::OnFileDeleted', $parms );
 
   } // foreach

@@ -34,7 +34,8 @@ use \AWSS3\helpers;
 use \AWSS3\utils;
 
 $mod_fm = \cms_utils::get_module('FileManager');
-$sdk_utils = utils::get_sdk()->getUtils();
+$sdk_mod = utils::get_sdk();
+$sdk_utils = $sdk_mod->getUtils();
 $s3_utils = new utils();
 
 $ready = 0;

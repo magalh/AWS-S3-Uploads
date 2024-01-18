@@ -42,8 +42,6 @@ $smarty->assign('maxfilesize',$config["max_upload_size"]);
 $smarty->assign('submit',$this->CreateInputSubmit($id,"submit",$this->Lang("submit"),"",""));
 $smarty->assign('formend',$this->CreateFormEnd());
 
-
-
 $post_max_size = filemanager_utils::str_to_bytes(ini_get('post_max_size'));
 $upload_max_filesize = filemanager_utils::str_to_bytes(ini_get('upload_max_filesize'));
 $smarty->assign('max_chunksize',min($upload_max_filesize,$post_max_size-1024));

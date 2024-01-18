@@ -49,31 +49,10 @@ class AWSS3 extends CMSModule
 
     public function __construct(){
         parent::__construct();
-
-        $smarty = \CmsApp::get_instance()->GetSmarty();
-        if( !$smarty ) return;
-
-        $sdk = cms_utils::get_module( 'AWSSDK' );
-        if(is_object($sdk)){
-            \spl_autoload_register([$this, 'autoload']);
-            $smarty->assign('sdk',$sdk);
-            if ($sdk->is_developer_mode()){
-                $smarty->assign('isdev',true);
-            }
-        }
-        $fn = $this->GetModulePath().'/lib/class.utils.php'; require_once($fn);
-        $smarty->registerClass('s3_utils','\AWSS3\utils');
-
+        //$fn = $this->GetModulePath().'/lib/class.utils.php'; require_once($fn);
+        //$smarty->registerClass('s3_utils','\AWSS3\utils');
     }
 
-    public function autoload($classname) : bool
-    {
-        $sdk_mod = cms_utils::get_module( 'AWSSDK' );
-        $path = $sdk_mod->GetModulePath() . '/lib';
-        require_once $path.'/aws.phar';
-        return TRUE;
-    }
-	
 	public function InitializeFrontend() {
 		$this->RegisterModulePlugin();
         $this->RestrictUnknownParams();

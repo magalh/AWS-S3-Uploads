@@ -175,7 +175,7 @@ $smarty->assign('oftext',$this->Lang('prompt_of'));
 $smarty->assign('pagetext',$this->Lang('prompt_page'));
 
 if ($startelement < 0 || $startelement > $endelement) {
-  echo "Invalid indexes.";
+  //echo "Invalid indexes startelement.";
 } else {
   // Slice the array to extract elements between the indexes
   
