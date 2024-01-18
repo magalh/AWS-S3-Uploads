@@ -31,7 +31,7 @@ use \AWSS3\utils;
 
 class AWSS3 extends CMSModule
 {
-	const MANAGE_PERM = 'manage_AWSS3';	
+	const MANAGE_PERM = 'manage_AWSS3';
 	
 	public function GetVersion() { return '1.1.1'; }
 	public function GetFriendlyName() { return $this->Lang('friendlyname'); }
@@ -51,6 +51,9 @@ class AWSS3 extends CMSModule
         parent::__construct();
         //$fn = $this->GetModulePath().'/lib/class.utils.php'; require_once($fn);
         //$smarty->registerClass('s3_utils','\AWSS3\utils');
+        $smarty = \CmsApp::get_instance()->GetSmarty();
+        if( !$smarty ) return;
+        $smarty->assign('s3_mod',$this);
     }
 
 	public function InitializeFrontend() {
