@@ -261,12 +261,14 @@ final class utils
 
     }
 
-    public static function deleteObject($bucket,$keyname){
+    public static function deleteObject($keyname){
+
+        $instance = new self();
         $s3 = self::getS3Client();
         try
             {
                 $result = $s3->deleteObject([
-                    'Bucket' => $bucket,
+                    'Bucket' => $instance->bucket_name,
                     'Key'    => $keyname
                 ]);
             }
@@ -276,11 +278,12 @@ final class utils
 
     }
 
-    public static function deleteObjectDir($bucket_id,$dir){
+    public static function deleteObjectDir($dir){
+        $instance = new self();
         $s3 = self::getS3Client();
     
         $keys = $s3->listObjects([
-            'Bucket' => $bucket_id,
+            'Bucket' => $instance->bucket_name,
             'Prefix' => $dir
         ]);
 
@@ -288,7 +291,7 @@ final class utils
         foreach ($keys['Contents'] as $key)
         {
             $s3->deleteObjects([
-                'Bucket'  => $bucket_id,
+                'Bucket'  => $instance->bucket_name,
                 'Delete' => [
                     'Objects' => [
                         [

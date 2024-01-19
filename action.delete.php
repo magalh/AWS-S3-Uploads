@@ -56,13 +56,13 @@ if( isset($params['submit']) ) {
     $lastchar = $file[-1];
 
     if ( strcmp($lastchar, "/") === 0 ) {
-      utils::deleteObjectDir($bucket_id,$file);
+      utils::deleteObjectDir($file);
       audit('',$this->GetName(), "Removed directory: ".$file);
       \CMSMS\HookManager::do_hook('AWSS3::OnDirectoryDeleted', $parms );
       continue;
     }
     
-    utils::deleteObject($bucket_id,$file);
+    utils::deleteObject($file);
     $parms = array('file'=>$file);
     audit('',$this->GetName(), "Removed file: ".$file);
     \CMSMS\HookManager::do_hook('AWSS3::OnFileDeleted', $parms );
@@ -70,11 +70,11 @@ if( isset($params['submit']) ) {
   } // foreach
 
   if( count($errors) == 0 ) {
-    $return_params["fmmessage"]= $mod_fm->Lang("deletesuccess"); //strips the file data
+    $return_params["fmmessage"]= $mod->Lang("deletesuccess"); //strips the file data
     $this->Redirect($id,"defaultadmin",$returnid,$return_params);
   }
 
-} // if submit
+} // if submit 
 
 // give everything to smarty.
 if( count($errors) ) {
