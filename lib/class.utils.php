@@ -321,7 +321,7 @@ final class utils
         $mod = self::get_mod();
         $stsClient = new StsClient([
             'version' => 'latest',
-            'region' => 'us-east-1',
+            'region' => $mod->GetPreference('access_region'),
             'credentials' => [
                 'key' => $mod->GetPreference('access_key'),
                 'secret' => $mod->GetPreference('access_secret_key'),
