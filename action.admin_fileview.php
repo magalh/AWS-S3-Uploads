@@ -198,6 +198,8 @@ if ($startelement < 0 || $startelement > $endelement) {
               $sendtodetail = array_merge($sendtodetail,array('pagelimit'=>$pagelimit));
           }
           $onerow->url = $this->create_url('m1_','defaultadmin','',$sendtodetail);
+          //<a href="{$file->presigned_url}" target="_blank">{admin_icon icon='permissions.gif' alt='view_page'|lang}</a>
+          $onerow->presigned_link = "";
           $onerow->url_link = "<a href='" . $onerow->url . "' class=\"dirlink\" title=\"{$FileManager->Lang('title_changedir')}\">" . $onerow->name . "</a>";
           $onerow->icon_link = $onerow->presigned_icon_link = "<a href='" . $onerow->url . "' class=\"dirlink\" title=\"{$FileManager->Lang('title_changedir')}\">".$row->icon."</a>";
       }

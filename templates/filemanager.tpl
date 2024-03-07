@@ -170,7 +170,7 @@ $(document).ready(function () {
 			{cycle values="row1,row2" assign=rowclass}
 			<tr class="{$rowclass}">
 				<td valign="middle">{$file->icon_link}</td>
-        <td class="clickable" valign="middle"><a href="{$file->presigned_url}" target="_blank">{admin_icon icon='permissions.gif' alt='view_page'|lang}</a></td>
+    <td class="clickable" valign="middle">{if !$file->dir}<a href="{$file->presigned_url}" target="_blank">{admin_icon icon='permissions.gif' alt='view_page'|lang}</a>{/if}</td>
 				<td class="clickable" valign="middle">{$file->url_link}</td>
 				<td class="clickable" valign="middle">{$file->mime}</td>
 				<td class="clickable" style="padding-right:8px;white-space:pre;text-align:right;" valign="middle">{*s3_utils::formatBytes($file->size)*}</td>
