@@ -576,6 +576,13 @@ final class utils
         return $array;
     }
 
+    public static function sortByDateDesc($array) {
+        usort($array, function($a, $b) {
+            return $b->date - $a->date; // Compare dates in descending order
+        });
+        return $array;
+    }
+
     public static function moveItemsToBeginningByIndex(&$array, $indicesToMove) {
         $itemsToMove = array();
     

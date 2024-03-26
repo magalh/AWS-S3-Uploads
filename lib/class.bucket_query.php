@@ -139,7 +139,10 @@ final class bucket_query
                 $listing['items'] = array_merge($listing['items'], $this->FetchAll($result));
                 $items++;
             }
-            utils::sortByProperty($listing['items'], 'name');
+
+            //print_r($listing['items']);
+            //utils::sortByProperty($listing['items'], 'date');
+            $listing['items'] = utils::sortByDateDesc($listing['items']);
 
             $indicesToMove = [];
             for ($i = 0; $i < count($listing['items']); $i++) {
@@ -149,7 +152,7 @@ final class bucket_query
                 utils::moveItemsToBeginningByIndex($listing['items'], $indicesToMove);
             }
             $listing['total'] = count($listing['items']);  
-            
+
         } catch (AwsException $e) {
             if($e->getStatusCode() == 404){
                 $error_message = $bucket_id." ".$e->getAwsErrorMessage();
